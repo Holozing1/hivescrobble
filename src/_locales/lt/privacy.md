@@ -2,7 +2,7 @@
 
 Ši privatumo politika paaiškina, kokius duomenis renkame ir saugome, kaip šiuos duomenis naudojame ir atskleidžiame.
 
-**Svarbi pastaba**: Šis dokumentas taikomas „Web Scrobbler“ versijai 2.40.0 ir naujesnei.
+**Svarbi pastaba**: Šis dokumentas taikomas „Hive Scrobbler“ versijai 2.40.0 ir naujesnei.
 
 ## Kokie duomenys yra renkami?
 
@@ -13,7 +13,7 @@
 Jūsų nustatymai ir kredencialai saugomi naršyklėje. Šis plėtinys saugo:
 
 - kredencialus apie skroblų paslaugas;
-- asmeninius „Web Scrobbler“ nustatymus;
+- asmeninius „Hive Scrobbler“ nustatymus;
 - redaguotus takelius;
 - pasirinktinius jungčių URL šablonus;
 - sistemos informaciją apie plėtinį.

@@ -52,6 +52,7 @@ function AlbumGuessing() {
 	return (
 		<>
 			<h2 id="header-album-guessing">{t('optionsAlbumGuessing')}</h2>
+			<fieldset disabled style="opacity: 0.5; border: none; padding: 0; margin: 0;">
 			<RadioButtons
 				buttons={[
 					{
@@ -101,6 +102,7 @@ function AlbumGuessing() {
 				}}
 				labelledby="header-album-guessing"
 			/>
+			</fieldset>
 		</>
 	);
 }

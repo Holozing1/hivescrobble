@@ -1670,12 +1670,6 @@ export default <ConnectorMeta[]>[
 		id: 'magnatune',
 	},
 	{
-		label: 'Libre.fm',
-		matches: ['*://libre.fm/*'],
-		js: 'librefm.js',
-		id: 'librefm',
-	},
-	{
 		label: 'Brain.fm',
 		matches: ['*://my.brain.fm/*'],
 		js: 'brainfm.js',

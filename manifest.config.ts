@@ -7,7 +7,7 @@ import { releaseTarget } from './scripts/util';
  */
 export const common: Manifest.WebExtensionManifest = {
 	manifest_version: 3,
-	name: 'Web Scrobbler',
+	name: 'Hive Scrobbler',
 	default_locale: 'en',
 	description: '__MSG_extDescription__',
 	version: pkg.version,

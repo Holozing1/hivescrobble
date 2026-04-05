@@ -2,7 +2,7 @@
 
 This privacy policy explains what data we collect and store; how we use and disclose this data.
 
-**Important note**: This document is applicable to Web Scrobbler v2.40.0 and newer.
+**Important note**: This document is applicable to Hive Scrobbler v2.40.0 and newer.
 
 ## What data is collected?
 
@@ -13,7 +13,7 @@ The extension does not collect any of your personal data.
 Your settings and credentials are stored within your browser. The extension stores:
 
  - Your credentials of scrobble services
- - Your personal Web Scrobbler settings
+ - Your personal Hive Scrobbler settings
  - Your edited tracks
  - Your custom URL patterns for connectors
  - System information of the extension

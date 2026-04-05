@@ -106,6 +106,10 @@ export const buildStart: UserConfig = {
 					src: resolvePath(root, '_locales'),
 					dest: '',
 				},
+				{
+					src: resolvePath(root, 'core', 'content', 'hive-relay.js'),
+					dest: 'content',
+				},
 			],
 		}),
 		compileConnectors({

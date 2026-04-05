@@ -25,7 +25,7 @@ export default function Ignored(props: { tab: Resource<ManagerTab> }) {
 				])}
 			</p>
 			<PopupAnchor
-				href="https://support.last.fm/t/track-filter-list-unknown-scrobbles/776"
+				href="https://hive.blog"
 				title={t('ignoredDescReadMore')}
 			>
 				{t('ignoredDescReadMore')}

@@ -81,8 +81,9 @@ export async function process(
 		connector.id,
 	);
 
+	const hasBasicInfo = Boolean(song.getArtist() && song.getTrack());
 	song.flags.isValid =
-		(isSongValid || Boolean(forceRecognize)) &&
+		(isSongValid || Boolean(forceRecognize) || hasBasicInfo) &&
 		(song.flags.isCorrectedByUser || !scrobbleEditedTracksOnly);
 }
 

@@ -16,7 +16,6 @@ import {
 import styles from './components.module.scss';
 import { ExpandMoreOutlined } from '@/ui/components/icons';
 import ClonedSong from '@/core/object/cloned-song';
-import browser from 'webextension-polyfill';
 import { sendContentMessage } from '@/util/communication';
 import type { ModalType } from './navigator';
 import savedEdits from '@/core/storage/saved-edits';
@@ -35,6 +34,142 @@ const [selectedScrobbles, setSelectedScrobbles] = createSignal<CacheScrobble[]>(
 );
 const [isScrobblingMultiple, setScrobblingMultiple] = createSignal(false);
 
+function topN(counts: Record<string, number>, n: number) {
+	return Object.entries(counts)
+		.sort((a, b) => b[1] - a[1])
+		.slice(0, n);
+}
+
+function CacheStats() {
+	const successful = createMemo(() =>
+		(scrobbles() ?? []).filter(
+			(s) => s.status === ScrobbleStatus.SUCCESSFUL,
+		),
+	);
+
+	const artistCounts = createMemo(() => {
+		const counts: Record<string, number> = {};
+		for (const s of successful()) {
+			const artist =
+				s.song.processed.artist || s.song.parsed.artist || '';
+			if (artist) {
+				counts[artist] = (counts[artist] ?? 0) + 1;
+			}
+		}
+		return counts;
+	});
+
+	const trackCounts = createMemo(() => {
+		const counts: Record<string, { track: string; artist: string; n: number }> = {};
+		for (const s of successful()) {
+			const track =
+				s.song.processed.track || s.song.parsed.track || '';
+			const artist =
+				s.song.processed.artist || s.song.parsed.artist || '';
+			if (track) {
+				const key = `${artist}\x00${track}`;
+				if (counts[key]) {
+					counts[key].n++;
+				} else {
+					counts[key] = { track, artist, n: 1 };
+				}
+			}
+		}
+		return counts;
+	});
+
+	const topArtists = createMemo(() => topN(artistCounts(), 10));
+	const topTracks = createMemo(() =>
+		Object.values(trackCounts())
+			.sort((a, b) => b.n - a.n)
+			.slice(0, 10),
+	);
+
+	const total = createMemo(() => (scrobbles() ?? []).length);
+	const successCount = createMemo(() => successful().length);
+	const uniqueArtists = createMemo(() => Object.keys(artistCounts()).length);
+	const fillPct = createMemo(() =>
+		Math.min(100, Math.round((total() / 1000) * 100)),
+	);
+
+	return (
+		<div class={styles.cacheStats}>
+			<div class={styles.cacheBar}>
+				<div class={styles.cacheBarTrack}>
+					<div
+						class={styles.cacheBarFill}
+						style={`width: ${fillPct()}%`}
+					/>
+				</div>
+				<span class={styles.cacheBarLabel}>
+					{total().toLocaleString()} / 1,000
+				</span>
+			</div>
+			<div class={styles.statGrid}>
+				<div class={styles.statItem}>
+					<div class={styles.statValue}>
+						{successCount().toLocaleString()}
+					</div>
+					<div class={styles.statLabel}>Scrobbled</div>
+				</div>
+				<div class={styles.statItem}>
+					<div class={styles.statValue}>
+						{uniqueArtists().toLocaleString()}
+					</div>
+					<div class={styles.statLabel}>Artists</div>
+				</div>
+			</div>
+			<Show when={topArtists().length > 0}>
+				<div class={styles.leaderboardPair}>
+					<div class={styles.leaderboard}>
+						<div class={styles.leaderboardTitle}>Top Artists</div>
+						<For each={topArtists()}>
+							{([artist, count], i) => (
+								<div class={styles.leaderboardRow}>
+									<span class={styles.leaderboardRank}>
+										{i() + 1}
+									</span>
+									<span class={styles.leaderboardName}>
+										{artist}
+									</span>
+									<span class={styles.leaderboardCount}>
+										{count}
+									</span>
+								</div>
+							)}
+						</For>
+					</div>
+					<Show when={topTracks().length > 0}>
+						<div class={styles.leaderboard}>
+							<div class={styles.leaderboardTitle}>Top Songs</div>
+							<For each={topTracks()}>
+								{(entry, i) => (
+									<div class={styles.leaderboardRow}>
+										<span class={styles.leaderboardRank}>
+											{i() + 1}
+										</span>
+										<span class={styles.leaderboardName}>
+											{entry.track}
+											<span
+												class={styles.leaderboardSub}
+											>
+												{entry.artist}
+											</span>
+										</span>
+										<span class={styles.leaderboardCount}>
+											{entry.n}
+										</span>
+									</div>
+								)}
+							</For>
+						</div>
+					</Show>
+				</div>
+			</Show>
+		</div>
+	);
+}
+
 export default function ScrobbleCache(props: {
 	setActiveModal: Setter<ModalType>;
 	modal: HTMLDialogElement | undefined;
@@ -42,6 +177,7 @@ export default function ScrobbleCache(props: {
 	return (
 		<>
 			<h1>{t('optionsScrobbleCache')}</h1>
+			<CacheStats />
 			<div class={styles.scrobbleButtonsWrapper}>
 				<button
 					class={styles.button}
@@ -471,13 +607,6 @@ function ScrobbleDetails(props: {
 					}}
 				/>
 			</Show>
-			<img
-				class={styles.coverArt}
-				src={
-					song().getTrackArt() ??
-					browser.runtime.getURL('img/cover_art_default.png')
-				}
-			/>
 			<div class={styles.scrobbleDetails}>
 				<div class={styles.scrobbleMetadata}>
 					<span class={styles.trackName}>{song().getTrack()}</span>

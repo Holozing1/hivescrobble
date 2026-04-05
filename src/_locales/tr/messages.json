@@ -4,7 +4,7 @@
         "description": "Description of the extension"
     },
     "optionsTitle": {
-        "message": "Web Scrobbler seçenekleri",
+        "message": "Hive Scrobbler seçenekleri",
         "description": "Title of options page"
     },
     "optionsGeneral": {
@@ -12,7 +12,7 @@
         "description": "'General' section"
     },
     "optionsPermissionsLabel": {
-        "message": "Web Scrobbler'a tüm sitelere erişim izni vermediniz; bu, her seferinde skroplamaya başlamak için uzantı simgesini tıklamanız gerektiği anlamına gelir. İzni vermek için burayı tıklayın. Safari'de iznin otomatik olarak verilmeyeceğini, ancak desteklenen bir siteyi bir sonraki ziyaretinizde izni vermek için \"Her Web Sitesinde Her Zaman İzin Ver...\" seçeneğini tıklayabileceğinizi unutmayın.",
+        "message": "Hive Scrobbler'a tüm sitelere erişim izni vermediniz; bu, her seferinde skroplamaya başlamak için uzantı simgesini tıklamanız gerektiği anlamına gelir. İzni vermek için burayı tıklayın. Safari'de iznin otomatik olarak verilmeyeceğini, ancak desteklenen bir siteyi bir sonraki ziyaretinizde izni vermek için \"Her Web Sitesinde Her Zaman İzin Ver...\" seçeneğini tıklayabileceğinizi unutmayın.",
         "description": "Label for permissions button"
     },
     "optionUseNotifications": {
@@ -72,7 +72,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingDisabledTitle": {
-        "message": "Web Scrobbler will not guess the album title of any track",
+        "message": "Hive Scrobbler will not guess the album title of any track",
         "description": "Option title"
     },
     "optionAlbumGuessingUneditedOnly": {
@@ -80,7 +80,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingUneditedOnlyTitle": {
-        "message": "Web Scrobbler will only guess the album title of unedited tracks. Tracks with only bulk edits applied will still have album guessed",
+        "message": "Hive Scrobbler will only guess the album title of unedited tracks. Tracks with only bulk edits applied will still have album guessed",
         "description": "Option title"
     },
     "optionAlbumGuessingAllTracks": {
@@ -88,7 +88,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingAllTracksTitle": {
-        "message": "Web Scrobbler will guess the album title of all albumless tracks including edited ones",
+        "message": "Hive Scrobbler will guess the album title of all albumless tracks including edited ones",
         "description": "Option title"
     },
     "optionsScrobbleBehavior": {
@@ -270,10 +270,6 @@
     "accountsApplicationNamePlaceholder": {
         "message": "Özel web kancası etiketi",
         "description": "Input label"
-    },
-    "accountsAddWebhook": {
-        "message": "Web Kancası Ekle",
-        "description": "Button label"
     },
     "optionsOptions": {
         "message": "Seçenekler",
@@ -487,10 +483,6 @@
         "message": "Bir parça tanınamadığında, uzantı çubuğunda soru işaretli gri bir simge görünür. Bu simgeye tıklayabilir ve açılan açılır pencereye doğru verileri girebilirsiniz.",
         "description": "Answer #3"
     },
-    "faqAnswer3b": {
-        "message": "Ayrıca, parça Last.fm tarafından doğrulanmamış olsa bile uzatma kuvvetinin parçayı skroblamasına neden olan \"İz tanımayı zorla\" adlı bir seçenek vardır.",
-        "description": "Answer #3"
-    },
     "faqQuestion4": {
         "message": "Bandcamp'taki bazı müzikler skroplanamaz. Bunu düzeltmek mümkün mü?",
         "description": "Question #4"
@@ -544,7 +536,7 @@
         "description": "Question #7"
     },
     "faqAnswer7": {
-        "message": "Bu uzantının orijinal yazarı David Šabata'dır. Uzantı şu an Web Scrobbler Ekibi tarafından geliştirilmekte ve sürdürülmektedir.",
+        "message": "Bu uzantının orijinal yazarı David Šabata'dır. Uzantı şu an Hive Scrobbler Ekibi tarafından geliştirilmekte ve sürdürülmektedir.",
         "description": "Answer #7"
     },
     "optionsAbout": {
@@ -556,7 +548,7 @@
         "description": "'About' section text"
     },
     "aboutExtensionDesc": {
-        "message": "Web Scrobbler, tarayıcıları aracılığıyla çevrimiçi müzik dinleyen ve Last.fm, Libre.fm, ListenBrainz ve Pleroma gibi skroplama hizmetlerini kullanarak güncel bir oynatma geçmişi tutmak isteyen kullanıcılar için oluşturulmuş bir tarayıcı uzantısıdır.",
+        "message": "Hive Scrobbler is a browser extension for people who listen to music online and want to keep a playback history on the Hive blockchain.",
         "description": "'About' section text"
     },
     "contributorsTitle": {
@@ -684,15 +676,15 @@
         "description": "The description of 'disallowed' popup when a song that is marked as private is being played."
     },
     "disallowedDesc1": {
-        "message": "Web Scrobbler \"$2\" ile \"$1\" şarkısını algıladı, ancak onları skroplamayacak.",
+        "message": "Hive Scrobbler \"$2\" ile \"$1\" şarkısını algıladı, ancak onları skroplamayacak.",
         "description": "The description of 'disallowed' popup. $1 is the artist detected. $2 is the track detected"
     },
     "disallowedDescIsAd": {
-        "message": "The reason is that Web Scrobbler has detected this as being an ad.",
+        "message": "The reason is that Hive Scrobbler has detected this as being an ad.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenYouTubeCategory": {
-        "message": "You have disabled scrobbling youtube video categories other than music and/or entertainment, and this video is marked by the uploader as a different category. You can choose to scrobble any video category by disabling both \"Scrobble videos from \"Music\" category\" and \"Scrobble videos from \"Entertainment\" category\" in Web Scrobbler settings.",
+        "message": "You have disabled scrobbling youtube video categories other than music and/or entertainment, and this video is marked by the uploader as a different category. You can choose to scrobble any video category by disabling both \"Scrobble videos from \"Music\" category\" and \"Scrobble videos from \"Entertainment\" category\" in Hive Scrobbler settings.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenTag": {
@@ -708,11 +700,11 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsPlayingElsewhere": {
-        "message": "The reason is that Web Scrobbler thinks this track is playing elsewhere and should not be scrobbled.",
+        "message": "The reason is that Hive Scrobbler thinks this track is playing elsewhere and should not be scrobbled.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescElementMissing": {
-        "message": "The reason is that some element Web Scrobbler relies on is not in the page. This probably means that either you are not playing music, or there is a bug in the connector.",
+        "message": "The reason is that some element Hive Scrobbler relies on is not in the page. This probably means that either you are not playing music, or there is a bug in the connector.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescFilteredTag": {
@@ -720,15 +712,15 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsLoading": {
-        "message": "Something Web Scrobbler relies on for finding the track details is loading. Please wait a few seconds. If this message persists, please report it, as something is wrong.",
+        "message": "Something Hive Scrobbler relies on for finding the track details is loading. Please wait a few seconds. If this message persists, please report it, as something is wrong.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescOther": {
-        "message": "For some unknown reason, Web Scrobbler has determined this should not scrobble. This is not related to any setting you have set. If you believe this is an error, please report it.",
+        "message": "For some unknown reason, Hive Scrobbler has determined this should not scrobble. This is not related to any setting you have set. If you believe this is an error, please report it.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDesc3": {
-        "message": "Web Scrobbler yine de bu internet sitesinin başka bir yerindeki müziği skroplayacaktır.",
+        "message": "Hive Scrobbler yine de bu internet sitesinin başka bir yerindeki müziği skroplayacaktır.",
         "description": "The description of 'disallowed' popup on all sites including youtube"
     },
     "disallowedButton": {
@@ -740,7 +732,7 @@
         "description": "The header of 'ignored' popup"
     },
     "ignoredDesc": {
-        "message": "Web Scrobbler \"$2\"yi \"$1\"e kadar skroplamaya çalıştı ancak etiketler Last.FM tarafından göz ardı edildi.",
+        "message": "Hive Scrobbler \"$2\"yi \"$1\"e kadar skroplamaya çalıştı ancak etiketler Last.FM tarafından göz ardı edildi.",
         "description": "The description of 'ignored' popup. $1 is artist name, and $2 is track name"
     },
     "ignoredDescReadMore": {
@@ -752,7 +744,7 @@
         "description": "The header of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc": {
-        "message": "Web Scrobbler bu internet sitesinden skroplamayı desteklemez.",
+        "message": "Hive Scrobbler bu internet sitesinden skroplamayı desteklemez.",
         "description": "The description of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc2": {
@@ -1016,7 +1008,7 @@
         "description": "`loading` page action title"
     },
     "pageActionUnsupported": {
-        "message": "Web Scrobbler bu internet sitesini desteklemiyor.",
+        "message": "Hive Scrobbler bu internet sitesini desteklemiyor.",
         "description": "`unsupported` page action title"
     },
     "pageActionLoved": {
@@ -1060,7 +1052,7 @@
         "description": "Notification title, $1 denotes the name of the website."
     },
     "notificationNativeScrobblerText": {
-        "message": "Make sure to turn off either Web Scrobbler or the built-in scrobbler!",
+        "message": "Make sure to turn off either Hive Scrobbler or the built-in scrobbler!",
         "description": "Notification text"
     },
     "notificationAuthError": {

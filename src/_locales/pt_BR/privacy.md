@@ -2,7 +2,7 @@
 
 Esta política de privacidade explica quais dados coletamos e armazenamos; como usamos e divulgamos esses dados.
 
-**Nota importante**: Este documento é aplicável ao Web Scrobbler v2.40.0 e versões mais recentes.
+**Nota importante**: Este documento é aplicável ao Hive Scrobbler v2.40.0 e versões mais recentes.
 
 ## Quais dados são coletados?
 
@@ -13,7 +13,7 @@ A extensão não coleta nenhum dos seus dados pessoais.
 Suas configurações e credenciais são armazenadas em seu navegador. A extensão armazena:
 
 - Suas credenciais dos serviços de scrobble
-- Suas configurações pessoais do Web Scrobbler
+- Suas configurações pessoais do Hive Scrobbler
 - Suas músicas editadas
 - Seus padrões de URL personalizados para conectores
 - Informações do sistema da extensão

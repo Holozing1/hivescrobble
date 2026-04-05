@@ -46,8 +46,7 @@ import {
 	sendResumedPlaying,
 	toggleLove,
 } from './scrobble';
-import scrobbleService from '../object/scrobble-service';
-import { fetchListenBrainzProfile } from '@/util/util';
+import scrobbleService, { hiveScrobbler } from '../object/scrobble-service';
 
 const disabledTabs = BrowserStorage.getStorage(BrowserStorage.DISABLED_TABS);
 
@@ -441,15 +440,6 @@ setupBackgroundListeners(
 	}),
 
 	/**
-	 * Listener called by a content script to attempt signing into musicbrainz.
-	 * This has to be done in background script, as safari blocks sending necessary cookies in other scripts.
-	 */
-	backgroundListener({
-		type: 'sendListenBrainzRequest',
-		fn: async (payload) => fetchListenBrainzProfile(payload.url),
-	}),
-
-	/**
 	 * Listener called by a controller to trigger clearing now playing notification.
 	 */
 	backgroundListener({
@@ -522,6 +512,18 @@ setupBackgroundListeners(
 			}
 
 			return (await browser.tabs.get(tabId)).audible ?? true;
+		},
+	}),
+
+	/**
+	 * Listener called by a controller when a scrobbled song finishes playing.
+	 * Broadcasts the finalized scrobble to Hive with accurate play percentage.
+	 */
+	backgroundListener({
+		type: 'hiveFinalize',
+		fn: (payload, sender) => {
+			const song = new ClonedSong(payload.song, sender.tab?.id ?? -1);
+			void hiveScrobbler.finalize(payload.playSeconds, song);
 		},
 	}),
 );

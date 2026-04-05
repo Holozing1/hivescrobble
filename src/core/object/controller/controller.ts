@@ -8,6 +8,7 @@ import {
 	isAnyResult,
 } from '@/util/util';
 import Song from '@/core/object/song';
+import type { CloneableSong } from '@/core/object/song';
 import Timer from '@/core/object/timer';
 import Pipeline from '@/core/object/pipeline/pipeline';
 import * as ControllerMode from '@/core/object/controller/controller-mode';
@@ -86,6 +87,9 @@ export default class Controller {
 
 	private forceScrobble = false;
 	private shouldHaveScrobbled = false;
+
+	private accumulatedPlaySeconds = 0;
+	private pendingFinalizeSong: CloneableSong | null = null;
 
 	private isEditing = false;
 	private setNotEditingTimeout = setTimeout(() => {
@@ -356,6 +360,36 @@ export default class Controller {
 					} else {
 						void this.setSongNowPlaying();
 					}
+				},
+			}),
+			contentListener({
+				type: 'hiveBroadcast',
+				fn: async (payload) => {
+					return new Promise<boolean>((resolve) => {
+						const id = crypto.randomUUID();
+						function onMessage(event: MessageEvent) {
+							if (
+								event.source !== window ||
+								!event.data?.__hobbles ||
+								event.data.type !== 'hiveBroadcastResult' ||
+								event.data.id !== id
+							) {
+								return;
+							}
+							window.removeEventListener('message', onMessage);
+							resolve(!!(event.data.success));
+						}
+						window.addEventListener('message', onMessage);
+						window.postMessage(
+							{
+								__hobbles: true,
+								type: 'hiveBroadcast',
+								id,
+								payload,
+							},
+							'*',
+						);
+					});
 				},
 			}),
 		);
@@ -900,6 +934,32 @@ export default class Controller {
 	 */
 	private resetState(): void {
 		this.dispatchEvent(ControllerEvents.ControllerReset);
+
+		if (this.isReplayingSong) {
+			// Same song looping — accumulate elapsed time, hold off on broadcast
+			if (this.currentSong?.flags.isScrobbled) {
+				this.accumulatedPlaySeconds += this.playbackTimer.getElapsed();
+				if (!this.pendingFinalizeSong) {
+					this.pendingFinalizeSong = this.currentSong.getCloneableData();
+				}
+			}
+		} else {
+			// Song truly over — fire hiveFinalize with total accumulated time
+			const currentElapsed = this.currentSong?.flags.isScrobbled
+				? this.playbackTimer.getElapsed()
+				: 0;
+			const totalPlaySeconds = this.accumulatedPlaySeconds + currentElapsed;
+			const songToFinalize =
+				this.pendingFinalizeSong ?? this.currentSong?.getCloneableData();
+			if (totalPlaySeconds > 0 && songToFinalize) {
+				void sendContentMessage({
+					type: 'hiveFinalize',
+					payload: { playSeconds: totalPlaySeconds, song: songToFinalize },
+				});
+			}
+			this.accumulatedPlaySeconds = 0;
+			this.pendingFinalizeSong = null;
+		}
 
 		this.playbackTimer.reset();
 		this.replayDetectionTimer.reset();

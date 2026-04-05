@@ -29,19 +29,6 @@ a {
 	overflow: hidden;
 	width: 100%;
 
-	&::before {
-		background-image: var(--site-image);
-		background-position: center;
-		background-size: cover;
-		content: '';
-		filter: blur(15px);
-		height: 100%;
-		inset: 0;
-		opacity: 0.2;
-		position: fixed;
-		width: 100%;
-		z-index: -2;
-	}
 }
 
 .settingsContentWrapper {

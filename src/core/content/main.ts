@@ -4,21 +4,55 @@ import * as Util from '@/core/content/util';
 import * as MetadataFilter from '@web-scrobbler/metadata-filter';
 import start from '@/core/content/starter';
 import browser from 'webextension-polyfill';
-import { sendContentMessage } from '@/util/communication';
+import {
+	sendContentMessage,
+	setupContentListeners,
+	contentListener,
+} from '@/util/communication';
 import savedEdits from '../storage/saved-edits';
 import regexEdits from '../storage/regex-edits';
-import { webhookListenForApproval } from './webhook';
+
+/**
+ * Relay hiveConnect requests from the background to the MAIN world (hive-relay.js)
+ * via window.postMessage, then return the result.
+ * Registered on all pages so "Connect with Keychain" can use any open http/https tab.
+ */
+setupContentListeners(
+	contentListener({
+		type: 'hiveConnect',
+		fn: async () => {
+			return new Promise<string>((resolve, reject) => {
+				const id = crypto.randomUUID();
+				function onMessage(event: MessageEvent) {
+					if (
+						event.source !== window ||
+						!event.data?.__hobbles ||
+						event.data.type !== 'hiveConnectResult' ||
+						event.data.id !== id
+					) {
+						return;
+					}
+					window.removeEventListener('message', onMessage);
+					if (event.data.error) {
+						reject(new Error(event.data.error as string));
+					} else {
+						resolve(event.data.username as string);
+					}
+				}
+				window.addEventListener('message', onMessage);
+				window.postMessage(
+					{ __hobbles: true, type: 'hiveConnect', id },
+					'*',
+				);
+			});
+		},
+	}),
+);
 
 main();
 async function main() {
 	updateTheme();
 	try {
-		if (
-			window.location.href.startsWith('https://webscrobbler.com/webhook')
-		) {
-			webhookListenForApproval();
-			return;
-		}
 		await fetchConnector();
 		start();
 	} catch (err) {

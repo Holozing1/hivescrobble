@@ -2,7 +2,7 @@
 
 Niniejsza polityka prywatności wyjaśnia zakres danych zbieranych, przetwarzanych przez rozszerzenie; a także zakres ich wykorzystania oraz dalszego wykorzystania tych danych.
 
-**Istotna uwaga**: Dokument ten ma zastosowanie do Web Scrobblera w wersji 2.40.0 oraz nowszych.
+**Istotna uwaga**: Dokument ten ma zastosowanie do Hive Scrobblera w wersji 2.40.0 oraz nowszych.
 
 ## Jakie dane są zbierane?
 
@@ -13,7 +13,7 @@ Rozszerzenie nie zbiera żadnych informacji osobistych.
 Twoje ustawienia oraz poświadczenia logowania są przechowywane wewnątrz przeglądarki. Rozszerzenie przechowuje:
 
 - Twoje poświadczenia logowania do usług scrobblera
-- Twoje osobiste ustawienia Web Scrobblera
+- Twoje osobiste ustawienia Hive Scrobblera
 - Twoje zmodyfikowane utwory
 - Niestandardowe wzorce adresów wspieranych usług
 - Informacje systemowe rozszerzenia

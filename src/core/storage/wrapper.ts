@@ -42,26 +42,6 @@ export interface Properties {
 	};
 }
 
-interface ListenBrainzAuthStarted extends Properties {
-	isAuthStarted?: boolean;
-}
-
-interface ListenBrainzAuthFinished extends Properties {
-	sessionID?: string;
-	sessionName?: string;
-}
-
-export type ListenBrainzModel =
-	| ListenBrainzAuthStarted
-	| ListenBrainzAuthFinished;
-
-export type WebhookModel = {
-	arrayProperties?: {
-		applicationName: string;
-		userApiUrl: string;
-	}[];
-};
-
 export type ArrayProperty = {
 	applicationName: string;
 	userApiUrl: string;
@@ -69,13 +49,13 @@ export type ArrayProperty = {
 
 export type ArrayProperties = ArrayProperty[];
 
+export interface HiveModel {
+	sessionID?: string;
+	sessionName?: string;
+}
+
 export interface ScrobblerModels {
-	LastFM?: { token?: string } | { sessionID?: string; sessionName?: string };
-	LibreFM?: { token?: string } | { sessionID?: string; sessionName?: string };
-	ListenBrainz?: ListenBrainzModel;
-	Maloja?: Properties;
-	Webhook?: WebhookModel;
-	Pleroma?: Properties;
+	Hive?: HiveModel;
 }
 
 export interface ManagerTab {

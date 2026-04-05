@@ -4,7 +4,7 @@
         "description": "Description of the extension"
     },
     "optionsTitle": {
-        "message": "Opcje rozszerzenia Web Scrobbler",
+        "message": "Opcje rozszerzenia Hive Scrobbler",
         "description": "Title of options page"
     },
     "optionsGeneral": {
@@ -12,7 +12,7 @@
         "description": "'General' section"
     },
     "optionsPermissionsLabel": {
-        "message": "Nie nadałeś rozszerzeniu Web Scrobbler uprawnień pozwalających na dostęp do odwiedzanych witryn internetowych, co oznacza że do rozpoczęcia scrobblingu każdorazowo konieczne jest kliknięcie ikony rozszerzenia. Kliknij tutaj, aby nadać uprawnienia. Jeżeli korzystasz z przeglądarki Safari, uprawnienia nie zostaną nadane automatycznie, ale podczas kolejnej wizyty na jednej z witryn wspieranej przez rozszerzenie będziesz mieć możliwość kliknięcia \"Zawsze zezwalaj na wszystkich witrynach...\" aby je zaakceptować.",
+        "message": "Nie nadałeś rozszerzeniu Hive Scrobbler uprawnień pozwalających na dostęp do odwiedzanych witryn internetowych, co oznacza że do rozpoczęcia scrobblingu każdorazowo konieczne jest kliknięcie ikony rozszerzenia. Kliknij tutaj, aby nadać uprawnienia. Jeżeli korzystasz z przeglądarki Safari, uprawnienia nie zostaną nadane automatycznie, ale podczas kolejnej wizyty na jednej z witryn wspieranej przez rozszerzenie będziesz mieć możliwość kliknięcia \"Zawsze zezwalaj na wszystkich witrynach...\" aby je zaakceptować.",
         "description": "Label for permissions button"
     },
     "optionUseNotifications": {
@@ -36,7 +36,7 @@
         "description": "Option label"
     },
     "optionUseInfoboxTitle": {
-        "message": "Pokazuj infobox Web Scrobblera na wspieranych witrynach",
+        "message": "Pokazuj infobox Hive Scrobblera na wspieranych witrynach",
         "description": "Option title"
     },
     "optionScrobblePodcasts": {
@@ -72,7 +72,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingDisabledTitle": {
-        "message": "Web Scrobbler nie będzie zgadywał tytułów albumów przy żadnym z utworów",
+        "message": "Hive Scrobbler nie będzie zgadywał tytułów albumów przy żadnym z utworów",
         "description": "Option title"
     },
     "optionAlbumGuessingUneditedOnly": {
@@ -80,7 +80,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingUneditedOnlyTitle": {
-        "message": "Web Scrobbler będzie zgadywać tytuły albumów wyłącznie przy utworach, których dane nie zostały edytowane ręcznie. Utwory z zastosowaną wyłącznie edycją zbiorową w dalszym ciągu będą miały odgadywane nazwy albumów.",
+        "message": "Hive Scrobbler będzie zgadywać tytuły albumów wyłącznie przy utworach, których dane nie zostały edytowane ręcznie. Utwory z zastosowaną wyłącznie edycją zbiorową w dalszym ciągu będą miały odgadywane nazwy albumów.",
         "description": "Option title"
     },
     "optionAlbumGuessingAllTracks": {
@@ -88,7 +88,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingAllTracksTitle": {
-        "message": "Web Scrobbler będzie zgadywać tytuł albumu dla każdego utworu bez przypisanego tytułu albumu, włączając w to utwory które były edytowane manualnie",
+        "message": "Hive Scrobbler będzie zgadywać tytuł albumu dla każdego utworu bez przypisanego tytułu albumu, włączając w to utwory które były edytowane manualnie",
         "description": "Option title"
     },
     "optionsScrobbleBehavior": {
@@ -270,10 +270,6 @@
     "accountsApplicationNamePlaceholder": {
         "message": "Etykieta niestandardowego webhooka",
         "description": "Input label"
-    },
-    "accountsAddWebhook": {
-        "message": "Dodaj Webhooka",
-        "description": "Button label"
     },
     "optionsOptions": {
         "message": "Opcje",
@@ -487,10 +483,6 @@
         "message": "Kiedy nie można rozpoznać utworu, na pasku rozszerzeń pojawia się szara ikona ze znakiem zapytania. Okienko otwarte po jej kliknięciu umożliwia wprowadzenie poprawnych informacji.",
         "description": "Answer #3"
     },
-    "faqAnswer3b": {
-        "message": "Możesz również zaznaczyć opcję \"Wymuś rozpoznanie utworu\", która wymusi na rozszerzeniu scrobblowanie utworów nawet kiedy poprawność informacji nie zostanie potwierdzona przez Last.fm.",
-        "description": "Answer #3"
-    },
     "faqQuestion4": {
         "message": "Część muzyki na Bandcampie nie może być przescrobblowana. Można to naprawić?",
         "description": "Question #4"
@@ -544,7 +536,7 @@
         "description": "Question #7"
     },
     "faqAnswer7": {
-        "message": "Rozszerzenie zostało pierwotnie stworzone przez Davida Šabatę. Obecnie jest ono rozwijane i utrzymywane przez Zespół Web Scrobblera.",
+        "message": "Rozszerzenie zostało pierwotnie stworzone przez Davida Šabatę. Obecnie jest ono rozwijane i utrzymywane przez Zespół Hive Scrobblera.",
         "description": "Answer #7"
     },
     "optionsAbout": {
@@ -556,7 +548,7 @@
         "description": "'About' section text"
     },
     "aboutExtensionDesc": {
-        "message": "Web Scrobbler to rozszerzenie do przeglądarki stworzone dla ludzi słuchających muzyki online, przez przeglądarkę, którzy chcą zachować aktualną historię odtwarzania w takich usługach jak Last.fm, Libre.fm, ListenBrainz czy Pleroma.",
+        "message": "Hive Scrobbler is a browser extension for people who listen to music online and want to keep a playback history on the Hive blockchain.",
         "description": "'About' section text"
     },
     "contributorsTitle": {
@@ -684,15 +676,15 @@
         "description": "The description of 'disallowed' popup when a song that is marked as private is being played."
     },
     "disallowedDesc1": {
-        "message": "Web Scrobbler rozpoznał ten utwór jako \"$2\" autorstwa \"$1\", ale nie przescrobbluje go.",
+        "message": "Hive Scrobbler rozpoznał ten utwór jako \"$2\" autorstwa \"$1\", ale nie przescrobbluje go.",
         "description": "The description of 'disallowed' popup. $1 is the artist detected. $2 is the track detected"
     },
     "disallowedDescIsAd": {
-        "message": "Web Scrobbler rozpoznał, że jest to reklama.",
+        "message": "Hive Scrobbler rozpoznał, że jest to reklama.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenYouTubeCategory": {
-        "message": "Wyłączyłeś scrobblowanie filmów na YouTubue z kategorii innych niż muzyka/rozrywka, a film ten został przez swojego twórcę oznaczony jako należący do innej kategorii. Możesz zdecydować się na scrobblowanie utworów ze wszystkich kategorii, wyłączając opcje 'Scrobbluj filmy z kategorii \"Muzyka\"' oraz 'Scrobbluj filmy z kategorii \"Rozrywka\"' w ustawieniach rozszerzenia Web Scrobbler.",
+        "message": "Wyłączyłeś scrobblowanie filmów na YouTubue z kategorii innych niż muzyka/rozrywka, a film ten został przez swojego twórcę oznaczony jako należący do innej kategorii. Możesz zdecydować się na scrobblowanie utworów ze wszystkich kategorii, wyłączając opcje 'Scrobbluj filmy z kategorii \"Muzyka\"' oraz 'Scrobbluj filmy z kategorii \"Rozrywka\"' w ustawieniach rozszerzenia Hive Scrobbler.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenTag": {
@@ -708,11 +700,11 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsPlayingElsewhere": {
-        "message": "Web Scrobbler ma wrażenie, że ten utwór odtwarzany jest aktualnie z innego źródła i jako taki nie powinien zostać przescrobblowany.",
+        "message": "Hive Scrobbler ma wrażenie, że ten utwór odtwarzany jest aktualnie z innego źródła i jako taki nie powinien zostać przescrobblowany.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescElementMissing": {
-        "message": "Jest to spowodowane tym, że któryś z elementów na którym polega Web Scrobbler nie jest dostępny na tej stronie. Zwykle dzieje się tak ponieważ muzyka z jakiegoś powodu nie jest odtwarzana, albo z powodu uszkodzonej integracji z usługą.",
+        "message": "Jest to spowodowane tym, że któryś z elementów na którym polega Hive Scrobbler nie jest dostępny na tej stronie. Zwykle dzieje się tak ponieważ muzyka z jakiegoś powodu nie jest odtwarzana, albo z powodu uszkodzonej integracji z usługą.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescFilteredTag": {
@@ -720,15 +712,15 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsLoading": {
-        "message": "Element, na którym Web Scrobbler polega w celu pozyskania szczegółowych informacji o utworze w dalszym ciągu się ładuje - daj temu jeszcze kilka sekund. Jeżeli problem będzie występował w dalszym ciągu i ta wiadomość nie zniknie samoistnie, prosimy o przesłanie zgłoszenia problemu - nie jest to zachowanie oczekiwane.",
+        "message": "Element, na którym Hive Scrobbler polega w celu pozyskania szczegółowych informacji o utworze w dalszym ciągu się ładuje - daj temu jeszcze kilka sekund. Jeżeli problem będzie występował w dalszym ciągu i ta wiadomość nie zniknie samoistnie, prosimy o przesłanie zgłoszenia problemu - nie jest to zachowanie oczekiwane.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescOther": {
-        "message": "Z nie do końca precyzyjnie określonego powodu, Web Scrobbler uznał, że nie powinien tego przescrobblować. Nie jest to związane z jakąkolwiek opcją włączoną w ustawieniach. Jeżeli uważasz, że jest to zachowanie błędne - prosimy o przesłanie zgłoszenia problemu.",
+        "message": "Z nie do końca precyzyjnie określonego powodu, Hive Scrobbler uznał, że nie powinien tego przescrobblować. Nie jest to związane z jakąkolwiek opcją włączoną w ustawieniach. Jeżeli uważasz, że jest to zachowanie błędne - prosimy o przesłanie zgłoszenia problemu.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDesc3": {
-        "message": "Web Scrobbler powinien w dalszym ciągu scrobblować muzykę z innych miejsc na tej witrynie.",
+        "message": "Hive Scrobbler powinien w dalszym ciągu scrobblować muzykę z innych miejsc na tej witrynie.",
         "description": "The description of 'disallowed' popup on all sites including youtube"
     },
     "disallowedButton": {
@@ -740,7 +732,7 @@
         "description": "The header of 'ignored' popup"
     },
     "ignoredDesc": {
-        "message": "Web Scrobbler próbował przescrobblować utwór \"$2\" autorstwa \"$1\", ale te tagi zostały zignorowane przez Last.FM.",
+        "message": "Hive Scrobbler próbował przescrobblować utwór \"$2\" autorstwa \"$1\", ale te tagi zostały zignorowane przez Last.FM.",
         "description": "The description of 'ignored' popup. $1 is artist name, and $2 is track name"
     },
     "ignoredDescReadMore": {
@@ -752,7 +744,7 @@
         "description": "The header of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc": {
-        "message": "Web Scrobbler nie obsługuje scrobblowania z tej strony internetowej.",
+        "message": "Hive Scrobbler nie obsługuje scrobblowania z tej strony internetowej.",
         "description": "The description of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc2": {
@@ -1016,7 +1008,7 @@
         "description": "`loading` page action title"
     },
     "pageActionUnsupported": {
-        "message": "Web Scrobbler nie obsługuje tej strony internetowej.",
+        "message": "Hive Scrobbler nie obsługuje tej strony internetowej.",
         "description": "`unsupported` page action title"
     },
     "pageActionLoved": {
@@ -1060,7 +1052,7 @@
         "description": "Notification title, $1 denotes the name of the website."
     },
     "notificationNativeScrobblerText": {
-        "message": "Upewnij się, że zdezaktywowałeś scrobblowanie w Web Scrobblerze albo scrobbling wbudowany w usługę!",
+        "message": "Upewnij się, że zdezaktywowałeś scrobblowanie w Hive Scrobblerze albo scrobbling wbudowany w usługę!",
         "description": "Notification text"
     },
     "notificationAuthError": {
@@ -1092,15 +1084,15 @@
         "description": "Hotkey label"
     },
     "infoBoxStateDisallowed": {
-        "message": "Scrobblowanie nie jest dozwolone. Naciśnij ikonę rozszerzenia Web Scrobbler, aby uzyskać więcej informacji.",
+        "message": "Scrobblowanie nie jest dozwolone. Naciśnij ikonę rozszerzenia Hive Scrobbler, aby uzyskać więcej informacji.",
         "description": "Infobox text when an option is disallowing scrobbling"
     },
     "infoBoxStateError": {
-        "message": "Wystąpił błąd usługi. Naciśnij ikonę rozszerzenia Web Scrobbler aby uzyskać więcej informacji.",
+        "message": "Wystąpił błąd usługi. Naciśnij ikonę rozszerzenia Hive Scrobbler aby uzyskać więcej informacji.",
         "description": "Infobox text when an error occured"
     },
     "infoBoxStateUnknown": {
-        "message": "Utwór nie został rozpoznany. Naciśnij ikonę rozszerzenia Web Scrobbler aby przypisać informacje ręcznie.",
+        "message": "Utwór nie został rozpoznany. Naciśnij ikonę rozszerzenia Hive Scrobbler aby przypisać informacje ręcznie.",
         "description": "Infobox track is not recognized"
     }
 }

@@ -4,7 +4,7 @@
         "description": "Description of the extension"
     },
     "optionsTitle": {
-        "message": "Web Scrobbler 選項",
+        "message": "Hive Scrobbler 選項",
         "description": "Title of options page"
     },
     "optionsGeneral": {
@@ -12,7 +12,7 @@
         "description": "'General' section"
     },
     "optionsPermissionsLabel": {
-        "message": "您尚未允許 Web Scrobbler 存取所有網站，這表示您每次都必須手動點擊擴充功能的圖示來啟動追蹤。請點擊此處以授予權限。請注意，在Safari中，此權限不會被自動授予，但是下次您瀏覽支援的網站時，您將可以點擊「永遠在所有網站上允許...」以授予權限。",
+        "message": "您尚未允許 Hive Scrobbler 存取所有網站，這表示您每次都必須手動點擊擴充功能的圖示來啟動追蹤。請點擊此處以授予權限。請注意，在Safari中，此權限不會被自動授予，但是下次您瀏覽支援的網站時，您將可以點擊「永遠在所有網站上允許...」以授予權限。",
         "description": "Label for permissions button"
     },
     "optionUseNotifications": {
@@ -36,7 +36,7 @@
         "description": "Option label"
     },
     "optionUseInfoboxTitle": {
-        "message": "在支援的網站頁面當中顯示 Web Scrobbler 資訊盒",
+        "message": "在支援的網站頁面當中顯示 Hive Scrobbler 資訊盒",
         "description": "Option title"
     },
     "optionScrobblePodcasts": {
@@ -72,7 +72,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingDisabledTitle": {
-        "message": "Web Scrobbler 不會猜測任何曲目的專輯名稱",
+        "message": "Hive Scrobbler 不會猜測任何曲目的專輯名稱",
         "description": "Option title"
     },
     "optionAlbumGuessingUneditedOnly": {
@@ -80,7 +80,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingUneditedOnlyTitle": {
-        "message": "Web Scrobbler 僅會猜測未編輯曲目的專輯名稱，也會猜測已套用大量編輯的曲目",
+        "message": "Hive Scrobbler 僅會猜測未編輯曲目的專輯名稱，也會猜測已套用大量編輯的曲目",
         "description": "Option title"
     },
     "optionAlbumGuessingAllTracks": {
@@ -88,7 +88,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingAllTracksTitle": {
-        "message": "Web Scrobbler 會猜測沒有專輯的曲目之專輯標題，包含已編輯的曲目",
+        "message": "Hive Scrobbler 會猜測沒有專輯的曲目之專輯標題，包含已編輯的曲目",
         "description": "Option title"
     },
     "optionsScrobbleBehavior": {
@@ -270,10 +270,6 @@
     "accountsApplicationNamePlaceholder": {
         "message": "自訂 Webhook 標籤",
         "description": "Input label"
-    },
-    "accountsAddWebhook": {
-        "message": "新增 Webhook",
-        "description": "Button label"
     },
     "optionsOptions": {
         "message": "選項",
@@ -487,10 +483,6 @@
         "message": "當曲目無法辨識時，一個帶有問號的灰色圖示會出現在擴充功能列中。您可以點擊該圖示，並在開啟的彈出視窗中輸入正確的資料。",
         "description": "Answer #3"
     },
-    "faqAnswer3b": {
-        "message": "此外，「強制辨識」選項會讓本擴充元件保存不被 Last.fm 驗證的曲目。",
-        "description": "Answer #3"
-    },
     "faqQuestion4": {
         "message": "無法記錄 Bandcamp 上的一些曲目。請問有可能修復這個問題嗎？",
         "description": "Question #4"
@@ -544,7 +536,7 @@
         "description": "Question #7"
     },
     "faqAnswer7": {
-        "message": "此擴充功能的原作者是 David Šabata。現在，此擴充功能由 Web Scrobbler 團隊開發及維護。",
+        "message": "此擴充功能的原作者是 David Šabata。現在，此擴充功能由 Hive Scrobbler 團隊開發及維護。",
         "description": "Answer #7"
     },
     "optionsAbout": {
@@ -556,7 +548,7 @@
         "description": "'About' section text"
     },
     "aboutExtensionDesc": {
-        "message": "Web Scrobbler 是製作給透過瀏覽器在線上聆聽音樂，而希望使用曲目記錄服務（例如 Last.fm、Libre.fm、ListenBrainz、Pleroma）來記錄播放歷史的人們的擴充元件。",
+        "message": "Hive Scrobbler is a browser extension for people who listen to music online and want to keep a playback history on the Hive blockchain.",
         "description": "'About' section text"
     },
     "contributorsTitle": {
@@ -684,15 +676,15 @@
         "description": "The description of 'disallowed' popup when a song that is marked as private is being played."
     },
     "disallowedDesc1": {
-        "message": "Web Scrobbler 偵測到了 $1 的歌曲 $2，但不會記錄它。",
+        "message": "Hive Scrobbler 偵測到了 $1 的歌曲 $2，但不會記錄它。",
         "description": "The description of 'disallowed' popup. $1 is the artist detected. $2 is the track detected"
     },
     "disallowedDescIsAd": {
-        "message": "這是因為 Web Scrobbler 已判斷它是廣告。",
+        "message": "這是因為 Hive Scrobbler 已判斷它是廣告。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenYouTubeCategory": {
-        "message": "您已停用非音樂或娛樂類別 YouTube 影片的記錄，而這個影片由上傳者標記為別的類別。如要記錄任何類別的影片，可以到 Web Scrobbler 設定停用「記錄「音樂」類別的影片」和「記錄「娛樂」類別的影片」這兩個選項。",
+        "message": "您已停用非音樂或娛樂類別 YouTube 影片的記錄，而這個影片由上傳者標記為別的類別。如要記錄任何類別的影片，可以到 Hive Scrobbler 設定停用「記錄「音樂」類別的影片」和「記錄「娛樂」類別的影片」這兩個選項。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenTag": {
@@ -708,11 +700,11 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsPlayingElsewhere": {
-        "message": "這是因為 Web Scrobbler 認為曲目正在別的地方播放而不應記錄。",
+        "message": "這是因為 Hive Scrobbler 認為曲目正在別的地方播放而不應記錄。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescElementMissing": {
-        "message": "這是因為 Web Scrobbler 依賴的某個元素不在頁面當中。這可能代表您並沒有在播放音樂，或者是 Connector 有問題。",
+        "message": "這是因為 Hive Scrobbler 依賴的某個元素不在頁面當中。這可能代表您並沒有在播放音樂，或者是 Connector 有問題。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescFilteredTag": {
@@ -720,15 +712,15 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsLoading": {
-        "message": "Web Scrobbler 依賴以取得曲目內容的東西正在載入中。請稍候幾秒。如果這個訊息一直持續顯示，請向我們回報問題，因為這代表有東西出錯。",
+        "message": "Hive Scrobbler 依賴以取得曲目內容的東西正在載入中。請稍候幾秒。如果這個訊息一直持續顯示，請向我們回報問題，因為這代表有東西出錯。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescOther": {
-        "message": "因為不明的原因，Web Scrobbler 判斷這不應該被記錄。這不是您在您的設定值當中所選擇的設定所造成的。如果您認為這是錯的，請向我們回報。",
+        "message": "因為不明的原因，Hive Scrobbler 判斷這不應該被記錄。這不是您在您的設定值當中所選擇的設定所造成的。如果您認為這是錯的，請向我們回報。",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDesc3": {
-        "message": "Web Scrobbler 仍應從這個網站的別處記錄音樂。",
+        "message": "Hive Scrobbler 仍應從這個網站的別處記錄音樂。",
         "description": "The description of 'disallowed' popup on all sites including youtube"
     },
     "disallowedButton": {
@@ -740,7 +732,7 @@
         "description": "The header of 'ignored' popup"
     },
     "ignoredDesc": {
-        "message": "Web Scrobbler 嘗試記錄了 \"$1\" 的 \"$2\"，但標籤被 Last.FM 忽略了。",
+        "message": "Hive Scrobbler 嘗試記錄了 \"$1\" 的 \"$2\"，但標籤被 Last.FM 忽略了。",
         "description": "The description of 'ignored' popup. $1 is artist name, and $2 is track name"
     },
     "ignoredDescReadMore": {
@@ -752,7 +744,7 @@
         "description": "The header of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc": {
-        "message": "Web Scrobbler 不支援從這個網站進行曲目記錄。",
+        "message": "Hive Scrobbler 不支援從這個網站進行曲目記錄。",
         "description": "The description of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc2": {
@@ -1016,7 +1008,7 @@
         "description": "`loading` page action title"
     },
     "pageActionUnsupported": {
-        "message": "Web Scrobbler 不支援此網站",
+        "message": "Hive Scrobbler 不支援此網站",
         "description": "`unsupported` page action title"
     },
     "pageActionLoved": {
@@ -1060,7 +1052,7 @@
         "description": "Notification title, $1 denotes the name of the website."
     },
     "notificationNativeScrobblerText": {
-        "message": "請確保您有關閉 Web Scrobbler 或內建的曲目記錄，不要兩個都開著！",
+        "message": "請確保您有關閉 Hive Scrobbler 或內建的曲目記錄，不要兩個都開著！",
         "description": "Notification text"
     },
     "notificationAuthError": {
@@ -1092,15 +1084,15 @@
         "description": "Hotkey label"
     },
     "infoBoxStateDisallowed": {
-        "message": "曲目記錄不被允許。點擊 Web Scrobbler 擴充元件圖示以取得更多資訊。",
+        "message": "曲目記錄不被允許。點擊 Hive Scrobbler 擴充元件圖示以取得更多資訊。",
         "description": "Infobox text when an option is disallowing scrobbling"
     },
     "infoBoxStateError": {
-        "message": "發生服務錯誤。點擊 Web Scrobbler 擴充元件圖示以取得更多資訊。",
+        "message": "發生服務錯誤。點擊 Hive Scrobbler 擴充元件圖示以取得更多資訊。",
         "description": "Infobox text when an error occured"
     },
     "infoBoxStateUnknown": {
-        "message": "曲目未被辨識。點擊 Web Scrobbler 擴充元件圖示來修正資訊。",
+        "message": "曲目未被辨識。點擊 Hive Scrobbler 擴充元件圖示來修正資訊。",
         "description": "Infobox track is not recognized"
     }
 }

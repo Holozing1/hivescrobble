@@ -1,10 +1,5 @@
 'use strict';
-import LastFmScrobbler from '@/core/scrobbler/lastfm/lastfm-scrobbler';
-import LibreFmScrobbler from '@/core/scrobbler/librefm-scrobbler';
-import ListenBrainzScrobbler from '@/core/scrobbler/listenbrainz/listenbrainz-scrobbler';
-import MalojaScrobbler from '@/core/scrobbler/maloja/maloja-scrobbler';
-import WebhookScrobbler from '@/core/scrobbler/webhook-scrobbler';
-import PleromaScrobbler from '@/core/scrobbler/pleroma/pleroma-scrobbler';
+import HiveScrobbler from '@/core/scrobbler/hive/hive-scrobbler';
 import { ServiceCallResult } from '@/core/object/service-call-result';
 import type { BaseSong } from '@/core/object/song';
 import type { ScrobblerSongInfo } from '@/core/scrobbler/base-scrobbler';
@@ -17,33 +12,15 @@ import { getScrobbleStatus } from '../storage/wrapper';
  * Service to handle all scrobbling behavior.
  */
 
-export type Scrobbler =
-	| LastFmScrobbler
-	| LibreFmScrobbler
-	| ListenBrainzScrobbler
-	| MalojaScrobbler
-	| WebhookScrobbler
-	| PleromaScrobbler;
+export type Scrobbler = HiveScrobbler;
 
 /**
  * Scrobblers that are registered and that can be bound.
  */
-const registeredScrobblers = [
-	new LastFmScrobbler(),
-	new LibreFmScrobbler(),
-	new ListenBrainzScrobbler(),
-	new MalojaScrobbler(),
-	new WebhookScrobbler(),
-	new PleromaScrobbler(),
-];
+export const hiveScrobbler = new HiveScrobbler();
+const registeredScrobblers = [hiveScrobbler];
 
-export type ScrobblerLabel =
-	| 'Last.fm'
-	| 'ListenBrainz'
-	| 'Libre.fm'
-	| 'Maloja'
-	| 'Webhook'
-	| 'Pleroma';
+export type ScrobblerLabel = 'Hive';
 
 /**
  * Check if scrobbler is in given array of scrobblers.
@@ -141,6 +118,9 @@ class ScrobbleService {
 	 * @returns Promise that will be resolved then the task will complete
 	 */
 	sendNowPlaying(song: BaseSong): Promise<ServiceCallResult[]> {
+		if (this.boundScrobblers.length === 0) {
+			return Promise.resolve([ServiceCallResult.RESULT_OK]);
+		}
 		debugLog(`Send "now playing" request: ${this.boundScrobblers.length}`);
 
 		return Promise.all(
@@ -231,6 +211,9 @@ class ScrobbleService {
 		songs: BaseSong[],
 		currentlyPlaying: boolean,
 	): Promise<ServiceCallResult[][]> {
+		if (this.boundScrobblers.length === 0) {
+			return Promise.resolve([[ServiceCallResult.RESULT_OK]]);
+		}
 		debugLog(`Send "scrobble" request: ${this.boundScrobblers.length}`);
 
 		const res = await Promise.all(

@@ -24,24 +24,6 @@ export default function ConnectorOptionsList() {
 					options={options}
 					setOptions={setOptions}
 					connectorOptions={connectorOptions}
-					i18ntitle="optionYtMusicRecognisedOnlyTitle"
-					i18nlabel="optionYtMusicRecognisedOnly"
-					connector="YouTube"
-					key="scrobbleMusicRecognisedOnly"
-				/>
-				<ConnectorOptionEntry
-					options={options}
-					setOptions={setOptions}
-					connectorOptions={connectorOptions}
-					i18ntitle="optionYtGetTrackInfoFromYtMusicTitle"
-					i18nlabel="optionYtGetTrackInfoFromYtMusic"
-					connector="YouTube"
-					key="enableGetTrackInfoFromYtMusic"
-				/>
-				<ConnectorOptionEntry
-					options={options}
-					setOptions={setOptions}
-					connectorOptions={connectorOptions}
 					i18ntitle="optionYtMusicOnlyTitle"
 					i18nlabel="optionYtMusicOnly"
 					connector="YouTube"
@@ -57,6 +39,7 @@ export default function ConnectorOptionsList() {
 					key="scrobbleEntertainmentOnly"
 				/>
 				<li class={styles.muted}>{t('optionYtDesc')}</li>
+				<li class={styles.muted}>YouTube Music recognition and track info are always enabled.</li>
 			</ul>
 		</>
 	);

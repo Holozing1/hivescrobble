@@ -15,12 +15,13 @@ export default function InfoComponent() {
 		<>
 			<h1>{t('optionsAbout')}</h1>
 			<p>{t('aboutExtensionDesc')}</p>
-			<p
-				innerHTML={t('aboutChangelog', [
-					currentChangelog(),
-					RELEASES_URL,
-				])}
-			></p>
+			<p>
+				Hive Scrobbler is a fork of{' '}
+				<a href="https://github.com/web-scrobbler/web-scrobbler" target="_blank" rel="noopener noreferrer">
+					Web Scrobbler
+				</a>
+				, an open-source browser extension licensed under the MIT License.
+			</p>
 			<h2>{t('versionTitle')}</h2>
 			<p innerHTML={t('versionText', getExtensionVersion())}></p>
 			<h2>{t('contributorsTitle')}</h2>

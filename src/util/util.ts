@@ -6,9 +6,6 @@ import type {
 	SavedEdit,
 } from '@/core/storage/options';
 import type {
-	ListenBrainzModel,
-	WebhookModel,
-	Properties,
 	StateManagement,
 	CacheScrobble,
 	BlockedTags,
@@ -33,17 +30,12 @@ export const DEFAULT_SCROBBLE_TIME = 30;
  * Percentage of track to playback before the track is scrobbled.
  * This value is used only if scrobble percent storage is somehow corrupted.
  */
-export const DEFAULT_SCROBBLE_PERCENT = 50;
+export const DEFAULT_SCROBBLE_PERCENT = 60;
 
 /**
  * Minimum number of seconds of scrobbleable track.
  */
 export const MIN_TRACK_DURATION = 30;
-
-/**
- * Max number of seconds of playback before the track is scrobbled.
- */
-export const MAX_SCROBBLE_TIME = 240;
 
 export type DebugLogType = 'log' | 'error' | 'warn' | 'info';
 
@@ -98,8 +90,7 @@ export function getSecondsToScrobble(
 		return -1;
 	}
 
-	const scrobbleTime = Math.round((duration * percent) / 100);
-	return Math.min(scrobbleTime, MAX_SCROBBLE_TIME);
+	return Math.round((duration * percent) / 100);
 }
 
 /**
@@ -136,9 +127,6 @@ export function hideObjectValue(
 		| { [key: string]: SavedEdit }
 		| { sessionID?: string; sessionName?: string }
 		| { token?: string }
-		| Properties
-		| ListenBrainzModel
-		| WebhookModel
 		| StateManagement
 		| RegexEdit[]
 		| CacheScrobble[]
@@ -241,82 +229,6 @@ export function kebabCaseToPascalCase(text: string): string {
 		.join('');
 }
 
-/**
- * Create a URL to an artist page on Last.fm.
- * @param artist - Artist name
- * @returns URL to the artist page
- */
-export function createArtistURL(artist: string | null | undefined): string {
-	if (!artist) {
-		return '';
-	}
-	return `https://www.last.fm/music/${encodeLastFMURIComponent(artist)}`;
-}
-
-/**
- * Create a URL to an album page on Last.fm.
- * @param artist - Artist name
- * @param album - Album name
- * @returns URL to the album page
- */
-export function createAlbumURL(
-	artist: string | null | undefined,
-	album: string | null | undefined,
-): string {
-	if (!album || !artist) {
-		return '';
-	}
-	return `${createArtistURL(artist)}/${encodeLastFMURIComponent(album)}`;
-}
-
-/**
- * Create a URL to a track page on Last.fm.
- * @param artist - Artist name
- * @param track - Track name
- * @returns URL to the track page
- */
-export function createTrackURL(
-	artist: string | null | undefined,
-	track?: string | null,
-): string {
-	if (!track || !artist) {
-		return '';
-	}
-	return `${createArtistURL(artist)}/_/${encodeLastFMURIComponent(track)}`;
-}
-
-/**
- * Create a URL to the page for a track in a user's library on Last.fm.
- * @param username - Username
- * @param artist - Artist name
- * @param track - Track name
- * @returns URL to the track library page
- */
-export function createTrackLibraryURL(
-	username: string | null | undefined,
-	artist: string | null | undefined,
-	track: string | null | undefined,
-): string {
-	if (!track || !artist || !username) {
-		return '';
-	}
-	return `https://www.last.fm/user/${encodeLastFMURIComponent(
-		username,
-	)}/library/music/${encodeLastFMURIComponent(artist)}/_/${encodeLastFMURIComponent(
-		track,
-	)}`;
-}
-
-/**
- * Encodes a text string as a valid component of a Uniform Resource Identifier (URI),
- * while replacing the plus (+) symbol from `%2B` to `%252B` so it works correctly
- * in last.fm.
- * @param uriComponent - A value representing an unencoded URI component
- * @returns Encoded URI component
- */
-export function encodeLastFMURIComponent(uriComponent: string): string {
-	return encodeURIComponent(uriComponent.replace(/\+/g, '%2B'));
-}
 
 /**
  * Check if script is currently running in a background script.
@@ -339,24 +251,6 @@ export function isBackgroundScript(): boolean {
 	return false;
 }
 
-/**
- * Attempt to fetch listenbrainz profile HTML.
- *
- * @param url - URL of listenbrainz instance
- * @returns html of profile, null if response error
- */
-export async function fetchListenBrainzProfile(url: string) {
-	const res = await fetch(url, {
-		method: 'GET',
-		// #v-ifdef VITE_FIREFOX
-		credentials: 'same-origin',
-		// #v-endif
-	});
-	if (!res.ok) {
-		return null;
-	}
-	return res.text();
-}
 
 /**
  * Clamp value between a minimum and a maximum

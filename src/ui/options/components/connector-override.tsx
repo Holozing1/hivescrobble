@@ -112,6 +112,33 @@ export default function ConnectorOverrideOptions(props: {
 }
 
 /**
+ * Connectors shown to all users by default.
+ * Everything else is available on request.
+ */
+const FEATURED_CONNECTOR_IDS = new Set([
+	'youtube',
+	'youtube-music',
+	'youtube-embed',
+	'spotify',
+	'soundcloud',
+	'apple-music',
+	'tidal',
+	'deezer',
+	'amazon',
+	'bandcamp',
+	'audius',
+	'mixcloud',
+	'audiomack',
+	'pandora',
+	'iheart',
+	'siriusxm-player',
+]);
+
+const featuredConnectors = connectors.filter((c) =>
+	FEATURED_CONNECTOR_IDS.has(c.id),
+);
+
+/**
  * Connector Override Options list
  */
 function ConnectorOptions(props: {
@@ -120,7 +147,7 @@ function ConnectorOptions(props: {
 }) {
 	return (
 		<Suspense fallback={<p>{t('optionsLoadingConnectorOptions')}</p>}>
-			<For each={connectors}>
+			<For each={featuredConnectors}>
 				{(connector) => (
 					<ConnectorOption
 						setActiveModal={props.setActiveModal}
@@ -129,6 +156,9 @@ function ConnectorOptions(props: {
 					/>
 				)}
 			</For>
+			<li style="margin-top: 0.75rem; font-size: 0.8rem; opacity: 0.45;">
+				Looking for a different platform? More connectors are available on request.
+			</li>
 		</Suspense>
 	);
 }

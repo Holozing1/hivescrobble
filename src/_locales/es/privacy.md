@@ -2,7 +2,7 @@
 
 Esta política de privacidad explica qué datos recogemos y almacenamos; cómo usamos y revelamos estos datos.
 
-**Aviso importante**: Este documento es aplicable a la versión de Web Scrobbler 2.40.0 y siguientes.
+**Aviso importante**: Este documento es aplicable a la versión de Hive Scrobbler 2.40.0 y siguientes.
 
 ## ¿Qué datos se recogen?
 
@@ -13,7 +13,7 @@ La extensión no recoge ninguno de sus datos personales.
 Su configuración y credenciales son almacenadas dentro de su navegador. La extensión guarda:
 
 - Sus credenciales del servicio de 'scrobbling'
-- Su configuración personal de la extensión Web Scrobbler
+- Su configuración personal de la extensión Hive Scrobbler
 - Sus pistas editadas
 - Sus direcciones URL personalizadas para conectores
 - Información de sistema de la extensión

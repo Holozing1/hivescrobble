@@ -17,7 +17,6 @@ import {
 	accountItem,
 	connectorOverrideOptionsItem,
 	settings,
-	showSomeLoveItem,
 } from './components/navigator';
 import ContextMenu from '../components/context-menu/context-menu';
 import { CacheEditModal } from './components/scrobble-cache';
@@ -43,13 +42,7 @@ function getDefaultSetting(): NavigatorNavigationButton {
 			return connectorOverrideOptionsItem;
 	}
 
-	// in non-safari, go to show some love page
-	// #v-ifdef !VITE_SAFARI
-	return showSomeLoveItem;
-	// #v-endif
-
-	// We actually reach this in safari, return about page
-	return aboutItem;
+	return accountItem;
 }
 
 const defaultSetting = getDefaultSetting();

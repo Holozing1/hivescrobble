@@ -149,8 +149,8 @@ const DEFAULT_CONNECTOR_OPTIONS: ConnectorOptions = {
 	YouTube: {
 		scrobbleMusicOnly: false,
 		scrobbleEntertainmentOnly: false,
-		scrobbleMusicRecognisedOnly: false,
-		enableGetTrackInfoFromYtMusic: false,
+		scrobbleMusicRecognisedOnly: true,  // always on — only scrobble what YT Music recognises
+		enableGetTrackInfoFromYtMusic: true, // always on — use YT Music for better track info
 	},
 };
 

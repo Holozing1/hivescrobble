@@ -16,7 +16,6 @@ import type { ManagerTab } from '@/core/storage/wrapper';
 import browser from 'webextension-polyfill';
 import ClonedSong from '@/core/object/cloned-song';
 import Base from './base';
-import { LastFMIcon } from '@/util/icons';
 import {
 	EditOutlined,
 	BlockOutlined,
@@ -28,13 +27,8 @@ import { sendBackgroundMessage } from '@/util/communication';
 import * as ControllerMode from '@/core/object/controller/controller-mode';
 import EditComponent from './edit';
 import {
-	createAlbumURL,
-	createArtistURL,
-	createTrackLibraryURL,
-	createTrackURL,
 } from '@/util/util';
 import scrobbleService from '@/core/object/scrobble-service';
-import type { SessionData } from '@/core/scrobbler/base-scrobbler';
 import { PopupAnchor, Squircle, isIos } from '../components/util';
 import ContextMenu from '../components/context-menu/context-menu';
 import type { Navigator } from '../options/components/navigator';
@@ -252,40 +246,10 @@ function IOSLoveTrack(props: {
 function TrackData(props: { song: Accessor<ClonedSong | null> }) {
 	return (
 		<>
-			<PopupLink
-				class={styles.bold}
-				href={createTrackURL(
-					props.song()?.getArtist(),
-					props.song()?.getTrack(),
-				)}
-				title={t('infoViewTrackPage', props.song()?.getTrack() ?? '')}
-			>
-				{props.song()?.getTrack()}
-			</PopupLink>
-			<PopupLink
-				href={createArtistURL(props.song()?.getArtist())}
-				title={t('infoViewArtistPage', props.song()?.getArtist() ?? '')}
-			>
-				{props.song()?.getArtist()}
-			</PopupLink>
-			<PopupLink
-				href={createAlbumURL(
-					props.song()?.getAlbumArtist() || props.song()?.getArtist(),
-					props.song()?.getAlbum(),
-				)}
-				title={t('infoViewAlbumPage', props.song()?.getAlbum() ?? '')}
-			>
-				{props.song()?.getAlbum()}
-			</PopupLink>
-			<PopupLink
-				href={createArtistURL(props.song()?.getAlbumArtist())}
-				title={t(
-					'infoViewArtistPage',
-					props.song()?.getAlbumArtist() ?? '',
-				)}
-			>
-				{props.song()?.getAlbumArtist()}
-			</PopupLink>
+			<span class={styles.bold}>{props.song()?.getTrack()}</span>
+			<span>{props.song()?.getArtist()}</span>
+			<span>{props.song()?.getAlbum()}</span>
+			<span>{props.song()?.getAlbumArtist()}</span>
 		</>
 	);
 }
@@ -294,29 +258,8 @@ function TrackData(props: { song: Accessor<ClonedSong | null> }) {
  * The component showing the number of times scrobbled and the connector.
  */
 function TrackMetadata(props: { song: Accessor<ClonedSong | null> }) {
-	const [session, setSession] = createSignal<SessionData>();
-	scrobbleService
-		.getScrobblerByLabel('Last.fm')
-		?.getSession()
-		.then(setSession);
-
 	return (
 		<div class={styles.playDetails}>
-			<PopupLink
-				class={`${styles.playCount} ${styles.label}`}
-				href={createTrackLibraryURL(
-					session()?.sessionName,
-					props.song()?.getArtist(),
-					props.song()?.getTrack(),
-				)}
-				title={t(
-					'infoYourScrobbles',
-					(props.song()?.metadata.userPlayCount || 0).toString(),
-				)}
-			>
-				<LastFMIcon />
-				{props.song()?.metadata.userPlayCount || 0}
-			</PopupLink>
 			<span class={styles.label}>{props.song()?.connector.label}</span>
 		</div>
 	);

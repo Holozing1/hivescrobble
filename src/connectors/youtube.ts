@@ -186,6 +186,11 @@ Connector.getOriginUrl = () => {
 	return `https://youtu.be/${videoId}`;
 };
 
+Connector.getTrackArt = () => {
+	const videoId = getVideoId();
+	return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+};
+
 Connector.getUniqueID = () => {
 	if (areChaptersAvailable()) {
 		return null;
@@ -231,7 +236,7 @@ Connector.scrobblingDisallowedReason = () => {
 Connector.applyFilter(
 	MetadataFilter.createYouTubeFilter().append({
 		artist: [removeLtrRtlChars, removeNumericPrefix],
-		track: [removeLtrRtlChars, removeNumericPrefix],
+		track: [removeLtrRtlChars, removeNumericPrefix, removeQualitySuffix],
 	}),
 );
 
@@ -521,6 +526,18 @@ function getTrackInfoFromTitle(): ArtistTrackInfo {
 	}
 
 	return { artist, track };
+}
+
+function removeQualitySuffix(text: string) {
+	return MetadataFilter.filterWithFilterRules(text, [
+		// (4K), (8K), (2K), (1K)
+		{ source: /\(\s*\d[kK]\s*\)/g, target: '' },
+		// (2160p), (1440p), (1080p), (720p), (480p), (360p), (240p), (144p)
+		{ source: /\(\s*\d{3,4}p\s*\)/gi, target: '' },
+		// trailing whitespace left behind
+		{ source: /\s{2,}/g, target: ' ' },
+		{ source: /\s+$/, target: '' },
+	]);
 }
 
 function removeLtrRtlChars(text: string) {

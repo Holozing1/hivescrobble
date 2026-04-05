@@ -4,7 +4,7 @@
         "description": "Description of the extension"
     },
     "optionsTitle": {
-        "message": "„Web Scrobbler“ parinktys",
+        "message": "„Hive Scrobbler“ parinktys",
         "description": "Title of options page"
     },
     "optionsGeneral": {
@@ -12,7 +12,7 @@
         "description": "'General' section"
     },
     "optionsPermissionsLabel": {
-        "message": "Nesuteikėte „Web Scrobbler“ leidimo naudotis visomis svetainėmis, todėl kiekvieną kartą turite spustelėti plėtinio piktogramą, kad pradėtumėte skrobuolinti. Spustelėkite čia, kad suteiktumėte leidimą. Atkreipkite dėmesį, kad naršyklėje „Safari“ leidimas nebus suteiktas automatiškai, bet kitą kartą apsilankę palaikomoje svetainėje galėsite paspausti „Visada leisti kiekvienoje svetainėje...“, kad suteiktumėte leidimą.",
+        "message": "Nesuteikėte „Hive Scrobbler“ leidimo naudotis visomis svetainėmis, todėl kiekvieną kartą turite spustelėti plėtinio piktogramą, kad pradėtumėte skrobuolinti. Spustelėkite čia, kad suteiktumėte leidimą. Atkreipkite dėmesį, kad naršyklėje „Safari“ leidimas nebus suteiktas automatiškai, bet kitą kartą apsilankę palaikomoje svetainėje galėsite paspausti „Visada leisti kiekvienoje svetainėje...“, kad suteiktumėte leidimą.",
         "description": "Label for permissions button"
     },
     "optionUseNotifications": {
@@ -36,7 +36,7 @@
         "description": "Option label"
     },
     "optionUseInfoboxTitle": {
-        "message": "Rodyti „Web Scrobbler“ informacijos langelį palaikomų svetainių puslapiuose",
+        "message": "Rodyti „Hive Scrobbler“ informacijos langelį palaikomų svetainių puslapiuose",
         "description": "Option title"
     },
     "optionScrobblePodcasts": {
@@ -72,7 +72,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingDisabledTitle": {
-        "message": "„Web Scrobbler“ neatspės jokio takelio albumo pavadinimo",
+        "message": "„Hive Scrobbler“ neatspės jokio takelio albumo pavadinimo",
         "description": "Option title"
     },
     "optionAlbumGuessingUneditedOnly": {
@@ -80,7 +80,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingUneditedOnlyTitle": {
-        "message": "„Web Scrobbler“ atspės tik neredaguotų takelių albumo pavadinimą. Takeliai, kuriems taikomi tik masiniai redagavimai, vis tiek atspės albumą.",
+        "message": "„Hive Scrobbler“ atspės tik neredaguotų takelių albumo pavadinimą. Takeliai, kuriems taikomi tik masiniai redagavimai, vis tiek atspės albumą.",
         "description": "Option title"
     },
     "optionAlbumGuessingAllTracks": {
@@ -88,7 +88,7 @@
         "description": "Option label"
     },
     "optionAlbumGuessingAllTracksTitle": {
-        "message": "„Web Scrobbler“ atspės visų takelių be albumo, įskaitant redaguotus, albumo pavadinimą",
+        "message": "„Hive Scrobbler“ atspės visų takelių be albumo, įskaitant redaguotus, albumo pavadinimą",
         "description": "Option title"
     },
     "optionsScrobbleBehavior": {
@@ -270,10 +270,6 @@
     "accountsApplicationNamePlaceholder": {
         "message": "Pasirinktinė interneto gaudyklės etiketė",
         "description": "Input label"
-    },
-    "accountsAddWebhook": {
-        "message": "Pridėti interneto gaudyklę",
-        "description": "Button label"
     },
     "optionsOptions": {
         "message": "Parinktys",
@@ -487,10 +483,6 @@
         "message": "Kai takelio negalima atpažinti, plėtinio juostoje pasirodo pilka piktograma su klausimo ženklu. Šią piktogramą galite spustelėti ir atidarytame iškylančiajame lange įvesti teisingus duomenis.",
         "description": "Answer #3"
     },
-    "faqAnswer3b": {
-        "message": "Be to, yra parinktis Priversti takelio atpažinimą, dėl kurios plėtinys priverčia takelį nuskrobuolinti, net jei takelis nepatvirtintas „Last.fm“.",
-        "description": "Answer #3"
-    },
     "faqQuestion4": {
         "message": "Kai kurios muzikos platformoje „Bandcamp“ negalima nuskrobuolinti. Ar įmanoma tai ištaisyti?",
         "description": "Question #4"
@@ -544,7 +536,7 @@
         "description": "Question #7"
     },
     "faqAnswer7": {
-        "message": "Originalus šio plėtinio autorius yra David Šabata (liet. Deividas Šabatas). Dabar šį plėtinį kuria ir prižiūri „Web Scrobbler“ komanda.",
+        "message": "Originalus šio plėtinio autorius yra David Šabata (liet. Deividas Šabatas). Dabar šį plėtinį kuria ir prižiūri „Hive Scrobbler“ komanda.",
         "description": "Answer #7"
     },
     "optionsAbout": {
@@ -556,7 +548,7 @@
         "description": "'About' section text"
     },
     "aboutExtensionDesc": {
-        "message": "„Web Scrobbler“ - tai naršyklės plėtinys, sukurtas žmonėms, kurie klausosi muzikos internete per naršyklę ir norėtų išlaikyti atnaujintą įrašo peržiūros istoriją, naudojant skrobuolinimų paslaugas, pavyzdžiui, „Last.fm“, „Libre.fm“, „ListenBrainz“ ir „Pleroma“.",
+        "message": "Hive Scrobbler is a browser extension for people who listen to music online and want to keep a playback history on the Hive blockchain.",
         "description": "'About' section text"
     },
     "contributorsTitle": {
@@ -684,15 +676,15 @@
         "description": "The description of 'disallowed' popup when a song that is marked as private is being played."
     },
     "disallowedDesc1": {
-        "message": "Web Scrobbler aptiko dainą „$2“ – „$1“, bet jo neskrobuolins.",
+        "message": "Hive Scrobbler aptiko dainą „$2“ – „$1“, bet jo neskrobuolins.",
         "description": "The description of 'disallowed' popup. $1 is the artist detected. $2 is the track detected"
     },
     "disallowedDescIsAd": {
-        "message": "Priežastis ta, kad „Web Scrobbler“ aptiko tai kaip reklamą.",
+        "message": "Priežastis ta, kad „Hive Scrobbler“ aptiko tai kaip reklamą.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenYouTubeCategory": {
-        "message": "Jūs išjungėte „YouTube“ vaizdo įrašų kategorijų skrobuolinimą, išskyrus muzikos ir (arba) pramogų kategorijas, o šį vaizdo įrašą įkėlėjas pažymėjo kaip kitą kategoriją. Galite pasirinkti skrobuolinti bet kurią vaizdo įrašų kategoriją, išjungdami „Web Scrobbler“ nustatymuose tiek „Skrobuolinti vaizdo įrašus iš „Muzika“ kategorijos“, tiek „Skrobuolinti vaizdo įrašus iš „Pramogos“ kategorijos“.",
+        "message": "Jūs išjungėte „YouTube“ vaizdo įrašų kategorijų skrobuolinimą, išskyrus muzikos ir (arba) pramogų kategorijas, o šį vaizdo įrašą įkėlėjas pažymėjo kaip kitą kategoriją. Galite pasirinkti skrobuolinti bet kurią vaizdo įrašų kategoriją, išjungdami „Hive Scrobbler“ nustatymuose tiek „Skrobuolinti vaizdo įrašus iš „Muzika“ kategorijos“, tiek „Skrobuolinti vaizdo įrašus iš „Pramogos“ kategorijos“.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescForbiddenTag": {
@@ -708,11 +700,11 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsPlayingElsewhere": {
-        "message": "Priežastis ta, kad „Web Scrobbler“ mano, jog šis takelis leidžiamas kitur ir neturėtų būti skrobuolinamas.",
+        "message": "Priežastis ta, kad „Hive Scrobbler“ mano, jog šis takelis leidžiamas kitur ir neturėtų būti skrobuolinamas.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescElementMissing": {
-        "message": "Priežastis ta, kad tam tikro elemento, kuriuo remiasi „Web Scrobbler“, puslapyje nėra. Tai tikriausiai reiškia, kad arba neleidžiate muzikos, arba jungtyje yra riktas.",
+        "message": "Priežastis ta, kad tam tikro elemento, kuriuo remiasi „Hive Scrobbler“, puslapyje nėra. Tai tikriausiai reiškia, kad arba neleidžiate muzikos, arba jungtyje yra riktas.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescFilteredTag": {
@@ -720,15 +712,15 @@
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescIsLoading": {
-        "message": "Kažkas, kuo „Web Scrobbler“ remiasi ieškant takelio išsamios informacijos, yra įkeliama. Palaukite kelias sekundes. Jei šis pranešimas išlieka, praneškite apie tai, nes kažkas ne taip.",
+        "message": "Kažkas, kuo „Hive Scrobbler“ remiasi ieškant takelio išsamios informacijos, yra įkeliama. Palaukite kelias sekundes. Jei šis pranešimas išlieka, praneškite apie tai, nes kažkas ne taip.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDescOther": {
-        "message": "Dėl nežinomų priežasčių „Web Scrobbler“ nustatė, kad tai neturėtų būti skrobuolinima. Tai nesusiję su jokiais jūsų nustatytais nustatymais. Jei manote, kad tai klaida, praneškite apie ją.",
+        "message": "Dėl nežinomų priežasčių „Hive Scrobbler“ nustatė, kad tai neturėtų būti skrobuolinima. Tai nesusiję su jokiais jūsų nustatytais nustatymais. Jei manote, kad tai klaida, praneškite apie ją.",
         "description": "The description of 'disallowed' popup."
     },
     "disallowedDesc3": {
-        "message": "„Web Scrobbler“ vis tiek turėtų skrobuolinti muziką iš kažkur kitur šioje svetainėje.",
+        "message": "„Hive Scrobbler“ vis tiek turėtų skrobuolinti muziką iš kažkur kitur šioje svetainėje.",
         "description": "The description of 'disallowed' popup on all sites including youtube"
     },
     "disallowedButton": {
@@ -740,7 +732,7 @@
         "description": "The header of 'ignored' popup"
     },
     "ignoredDesc": {
-        "message": "„Web Scrobbler“ bandė nuskrobuolinti „$2“ – „$1“, bet „Last.FM“ ignoravo žymes.",
+        "message": "„Hive Scrobbler“ bandė nuskrobuolinti „$2“ – „$1“, bet „Last.FM“ ignoravo žymes.",
         "description": "The description of 'ignored' popup. $1 is artist name, and $2 is track name"
     },
     "ignoredDescReadMore": {
@@ -752,7 +744,7 @@
         "description": "The header of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc": {
-        "message": "„Web Scrobbler“ nepalaiko skrobuolinimo iš šios svetainės.",
+        "message": "„Hive Scrobbler“ nepalaiko skrobuolinimo iš šios svetainės.",
         "description": "The description of 'unsupported' popup"
     },
     "unsupportedWebsiteDesc2": {
@@ -1016,7 +1008,7 @@
         "description": "`loading` page action title"
     },
     "pageActionUnsupported": {
-        "message": "„Web Scrobbler“ nepalaiko šios svetainės.",
+        "message": "„Hive Scrobbler“ nepalaiko šios svetainės.",
         "description": "`unsupported` page action title"
     },
     "pageActionLoved": {
@@ -1060,7 +1052,7 @@
         "description": "Notification title, $1 denotes the name of the website."
     },
     "notificationNativeScrobblerText": {
-        "message": "Būtinai išjunkite „Web Scrobbler“ arba integruotą skrobuoklį.",
+        "message": "Būtinai išjunkite „Hive Scrobbler“ arba integruotą skrobuoklį.",
         "description": "Notification text"
     },
     "notificationAuthError": {
@@ -1092,15 +1084,15 @@
         "description": "Hotkey label"
     },
     "infoBoxStateDisallowed": {
-        "message": "Skrobuolinimas neleidžiamas. Spustelėkite „Web Scrobbler“ plėtinio piktogramą, kad gautumėte daugiau informacijos.",
+        "message": "Skrobuolinimas neleidžiamas. Spustelėkite „Hive Scrobbler“ plėtinio piktogramą, kad gautumėte daugiau informacijos.",
         "description": "Infobox text when an option is disallowing scrobbling"
     },
     "infoBoxStateError": {
-        "message": "Įvyko paslaugos klaida. Spustelėkite „Web Scrobbler“ plėtinio piktogramą, kad gautumėte daugiau informacijos.",
+        "message": "Įvyko paslaugos klaida. Spustelėkite „Hive Scrobbler“ plėtinio piktogramą, kad gautumėte daugiau informacijos.",
         "description": "Infobox text when an error occured"
     },
     "infoBoxStateUnknown": {
-        "message": "Takelis neatpažintas. Spustelėkite „Web Scrobbler“ plėtinio piktogramą, kad ištaisytumėte informaciją.",
+        "message": "Takelis neatpažintas. Spustelėkite „Hive Scrobbler“ plėtinio piktogramą, kad ištaisytumėte informaciją.",
         "description": "Infobox track is not recognized"
     }
 }

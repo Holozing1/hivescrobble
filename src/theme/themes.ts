@@ -17,7 +17,7 @@ export async function initializeThemes() {
 		return;
 	}
 
-	updateTheme('theme-system');
+	updateTheme('theme-dark');
 }
 
 /**

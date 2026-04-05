@@ -2,7 +2,7 @@
 
 Diese Datenschutzerklärung erläutert, welche Daten wir erheben und speichern und wie wir diese Daten verwenden und weitergeben.
 
-**Wichtiger Hinweis**: Dieses Dokument ist anwendbar auf Web Scrobbler v2.40.0 und neuer.
+**Wichtiger Hinweis**: Dieses Dokument ist anwendbar auf Hive Scrobbler v2.40.0 und neuer.
 
 ## Welche Daten werden erhoben?
 
@@ -13,7 +13,7 @@ Diese Erweiterung sammelt keine deiner personenbezogenen Daten.
 Deine Einstellungen und Zugangsdaten werden in deinem Browser gespeichert. Die Erweiterung speichert:
 
 - Deine Zugangsdaten für Scrobble-Dienste
-- Deine persönlichen Einstellungen für Web Scrobbler
+- Deine persönlichen Einstellungen für Hive Scrobbler
 - Deine bearbeiteten Titel
 - Deine individuellen URL-Muster für Verbinder
 - Systeminformationen der Erweiterung

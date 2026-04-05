@@ -160,7 +160,7 @@ export const aboutItem: NavigatorNavigationButton = {
 export const aboutGroup: NavigatorButtonGroup = {
 	namei18n: 'optionsAbout',
 	icon: InfoOutlined,
-	group: [contactItem, faqItem, aboutItem],
+	group: [faqItem, aboutItem],
 };
 
 export const showSomeLoveItem: NavigatorNavigationButton = {
@@ -176,9 +176,6 @@ export const settings: Navigator = [
 	accountItem,
 	optionsGroup,
 	aboutGroup,
-	// #v-ifdef !VITE_SAFARI
-	showSomeLoveItem,
-	// #v-endif
 ];
 
 async function getToggleNavigators(): Promise<NavigatorActionButton[]> {

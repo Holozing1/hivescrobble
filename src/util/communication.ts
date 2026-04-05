@@ -98,12 +98,6 @@ interface ContentCommunications {
 		};
 		response: (ServiceCallResult | Record<string, never>)[];
 	};
-	sendListenBrainzRequest: {
-		payload: {
-			url: string;
-		};
-		response: string | null;
-	};
 	updateScrobblerProperties: {
 		payload: undefined;
 		response: void;
@@ -122,9 +116,29 @@ interface ContentCommunications {
 		payload: undefined;
 		response: boolean;
 	};
+	hiveFinalize: {
+		payload: {
+			playSeconds: number;
+			song: CloneableSong;
+		};
+		response: void;
+	};
 }
 
 interface BackgroundCommunications {
+	hiveConnect: {
+		payload: undefined;
+		response: string; // verified Hive username
+	};
+	hiveBroadcast: {
+		payload: {
+			username: string;
+			id: string;
+			json: string;
+			displayMsg: string;
+		};
+		response: boolean; // success
+	};
 	resetData: {
 		payload: undefined;
 		response: void;

@@ -162,12 +162,7 @@ const storageTypeMap = {
 	[NOTIFICATIONS]: SYNC,
 	[OPTIONS]: SYNC,
 
-	LastFM: LOCAL,
-	LibreFM: LOCAL,
-	ListenBrainz: LOCAL,
-	Maloja: LOCAL,
-	Webhook: LOCAL,
-	Pleroma: LOCAL,
+	Hive: LOCAL,
 
 	[NATIVE_SCROBBLER_NOTIFICATION]: LOCAL,
 	[BLOCKLISTS]: LOCAL,

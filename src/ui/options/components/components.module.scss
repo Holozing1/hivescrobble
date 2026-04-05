@@ -614,32 +614,25 @@ summary {
 	align-items: center;
 	background-color: var(--last-fm-bg-weak);
 	border: var(--interactable-border);
-	border-radius: 1em;
+	border-radius: 0.5em;
 	box-shadow: var(--neuomorphic-small-bottom), var(--neuomorphic-small-top);
 	display: flex;
 	gap: 0.5em;
-	height: 7em;
-	margin-bottom: 1em;
+	margin-bottom: 0.4em;
 	overflow: hidden;
-	padding-right: 1em;
+	padding: 0.4em 0.75em;
 
 	.scrobbleCheckbox {
 		border: none;
 	}
 
-	.coverArt {
-		height: 7em;
-		object-fit: cover;
-		width: 7em;
-	}
-
-	.scrobbleDetails {
+.scrobbleDetails {
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
 		flex-shrink: 1;
-		justify-content: space-between;
-		min-height: 6em;
+		justify-content: center;
+		gap: 0.25em;
 		overflow: hidden;
 
 		.scrobbleMetadata {
@@ -740,6 +733,129 @@ summary {
 
 		.scrobbleDate {
 			font-size: 0.7rem;
+		}
+	}
+}
+
+.cacheStats {
+	margin: 0.75rem 0 1.25rem;
+
+	.cacheBar {
+		align-items: center;
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 0.75rem;
+
+		.cacheBarTrack {
+			background-color: var(--checkbox-inactive);
+			border-radius: 0.5rem;
+			flex-grow: 1;
+			height: 0.5rem;
+			max-width: 20rem;
+			overflow: hidden;
+
+			.cacheBarFill {
+				background-color: var(--always-last-fm);
+				height: 100%;
+				transition: width 0.3s ease-in-out;
+			}
+		}
+
+		.cacheBarLabel {
+			color: var(--muted-text);
+			font-size: 0.85em;
+			white-space: nowrap;
+		}
+	}
+
+	.statGrid {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+	}
+
+	.statItem {
+		background-color: var(--last-fm-bg-weak);
+		border: var(--interactable-border);
+		border-radius: 0.5em;
+		min-width: 6ch;
+		padding: 0.4em 0.8em;
+
+		.statValue {
+			font-size: 1.3em;
+			font-weight: bold;
+		}
+
+		.statLabel {
+			color: var(--muted-text);
+			font-size: 0.7em;
+		}
+	}
+
+	.leaderboardPair {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 1.5rem;
+	}
+
+	.leaderboard {
+		flex: 1 1 18rem;
+		max-width: 32rem;
+
+		.leaderboardTitle {
+			color: var(--muted-text);
+			font-size: 0.8em;
+			font-weight: bold;
+			letter-spacing: 0.05em;
+			margin-bottom: 0.4rem;
+			text-transform: uppercase;
+		}
+
+		.leaderboardRow {
+			align-items: baseline;
+			display: flex;
+			gap: 0.5rem;
+			padding: 0.2em 0;
+
+			&:not(:last-child) {
+				border-bottom: 1px solid var(--interactable-border-color, rgba(128, 128, 128, 0.2));
+			}
+
+			.leaderboardRank {
+				color: var(--muted-text);
+				font-size: 0.75em;
+				min-width: 1.5ch;
+				text-align: right;
+			}
+
+			.leaderboardName {
+				display: flex;
+				flex-direction: column;
+				flex-grow: 1;
+				font-size: 0.9em;
+				overflow: hidden;
+
+				> :first-child {
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+
+				.leaderboardSub {
+					color: var(--muted-text);
+					font-size: 0.8em;
+					overflow: hidden;
+					text-overflow: ellipsis;
+					white-space: nowrap;
+				}
+			}
+
+			.leaderboardCount {
+				color: var(--muted-text);
+				font-size: 0.8em;
+				white-space: nowrap;
+			}
 		}
 	}
 }

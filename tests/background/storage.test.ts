@@ -75,7 +75,7 @@ function runTests() {
 
 function testBrowserStorage() {
 	it('should return local storage', () => {
-		const storage = BrowserStorage.getScrobblerStorage('LastFM');
+		const storage = BrowserStorage.getScrobblerStorage('Hive');
 		expect(storage).to.be.an('object');
 	});
 

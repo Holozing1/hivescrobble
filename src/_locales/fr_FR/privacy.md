@@ -2,7 +2,7 @@
 
 Les politiques de confidentialité expliquent quelles données nous collectons et stoquons ; comment nous utilisons et diffusons ces données.
 
-**Note importante** : Ce document s'applique à Web Scrobbler v2.40.0 et aux versions plus récentes.
+**Note importante** : Ce document s'applique à Hive Scrobbler v2.40.0 et aux versions plus récentes.
 
 ## Quelles données sont collectées ?
 
@@ -13,7 +13,7 @@ Cette extension ne collecte aucun de vos données personnel.
 Vos paramètres et identifiants sont stockés dans votre navigateur. L'extension stock :
 
 - Vos identifiants des services de scrobble
-- Vos paramètres personnels de Web Scrobbler
+- Vos paramètres personnels de Hive Scrobbler
 - Vos titres édités
 - Vos modèles d'URL personnalisés pour les connecteurs
 - Informations sur le système de l'extension

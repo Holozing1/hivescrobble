@@ -2,7 +2,7 @@
 
 Bu gizlilik politikası hangi verileri topladığımızı ve sakladığımızı açıklamaktadır; bu verileri nasıl kullandığımız ve ulaştığımız.
 
-**Önemli not**: Bu belge Web Scrobbler v2.40.0 ve daha yeni sürümler için geçerlidir.
+**Önemli not**: Bu belge Hive Scrobbler v2.40.0 ve daha yeni sürümler için geçerlidir.
 
 ## Hangi veriler toplanıyor?
 
@@ -13,7 +13,7 @@ Uzantı hiçbir kişisel verinizi toplamaz.
 Ayarlarınız ve kimlik bilgileriniz tarayıcınızda saklanır. Uzantı şunları depolar:
 
 - Skroplama hizmetlerine ilişkin kimlik bilgileriniz
-- Kişisel Web Scrobbler ayarlarınız
+- Kişisel Hive Scrobbler ayarlarınız
 - Düzenlediğiniz parçalar
 - Bağlayıcılar için özel URL kalıplarınız
 - Uzantının sistem bilgileri

@@ -383,6 +383,28 @@ async function writeMonochromeIcon(
  * Writes all the appropriate PNGs for the main extension icon for the target browser.
  */
 async function writeMainIcon(): Promise<void> {
+	// Use logo.png if present, otherwise fall back to the SVG.
+	const customLogoPath = resolve(input, 'main', 'logo.png');
+	const hasCustomLogo = await fs
+		.access(customLogoPath)
+		.then(() => true)
+		.catch(() => false);
+
+	if (hasCustomLogo) {
+		const image = await loadImage(customLogoPath);
+		// Center-square crop (logo has white space top/bottom).
+		const srcSize = Math.min(image.width, image.height);
+		const srcX = (image.width - srcSize) / 2;
+		const srcY = (image.height - srcSize) / 2;
+		for (const res of mainIconResolutions) {
+			const canvas = createCanvas(res, res);
+			const ctx = canvas.getContext('2d');
+			ctx.drawImage(image, srcX, srcY, srcSize, srcSize, 0, 0, res, res);
+			await fs.writeFile(resolve(output, `icon_main_${res}.png`), canvas.toBuffer());
+		}
+		return;
+	}
+
 	const path = `${mainIconName()}.svg`;
 	const marginFactor = releaseTarget !== releaseTargets.safari ? 10 / 128 : 0;
 	for (const res of mainIconResolutions) {
