@@ -18,6 +18,13 @@ export interface ConnectorMeta {
 
 export default <ConnectorMeta[]>[
 	{
+		label: 'YouTube Embed',
+		matches: ['*://*.youtube.com/embed/*'],
+		js: 'youtube-embed.js',
+		id: 'youtube-embed',
+		allFrames: true,
+	},
+	{
 		label: 'YouTube',
 		matches: ['*://www.youtube.com/*', '*://m.youtube.com/*'],
 		js: 'youtube.js',
@@ -938,13 +945,6 @@ export default <ConnectorMeta[]>[
 		matches: ['*://www.music-flo.com/*'],
 		js: 'music-flo.js',
 		id: 'music-flo',
-	},
-	{
-		label: 'Discogs',
-		matches: ['*://www.discogs.com/*'],
-		js: 'youtube-embed.js',
-		id: 'youtube-embed',
-		allFrames: true,
 	},
 	{
 		label: 'NPR',

@@ -154,7 +154,8 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 
 		const duration = song.getDuration() ?? 0;
 		// 1 tx at ≥60%, then 1 more for each additional 100% of duration (160%, 260%, …).
-		const txCount = duration > 0 ? 1 + Math.floor(Math.max(0, (playSeconds / duration) - 0.6)) : 1;
+		// Cap at 3 to guard against accumulated time bugs causing runaway broadcasts.
+		const txCount = Math.min(3, duration > 0 ? 1 + Math.floor(Math.max(0, (playSeconds / duration) - 0.6)) : 1);
 
 		for (let i = 0; i < txCount; i++) {
 			// Each tx reflects how far into its own 100% cycle the listener got.

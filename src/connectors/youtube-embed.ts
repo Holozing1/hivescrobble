@@ -4,56 +4,99 @@ export {};
  * Generic connector for Youtube embed videos.
  */
 
-/**
- * CSS selector of video element.
- */
 const VIDEO_SELECTOR = '.html5-main-video';
+const PLAYER_SELECTOR = '.html5-video-player';
 
-function getVideoUrl() {
-	return Util.getAttrFromSelectors('.ytp-title-link', 'href');
+// Track info injected by the Zingit page via postMessage
+let injectedArtistTrack: { artist: string | null; track: string | null } | null = null;
+
+window.addEventListener('message', (event: MessageEvent) => {
+	if (event.data?.__hobbles && event.data.type === 'zingitTrack') {
+		injectedArtistTrack = {
+			artist: event.data.artist || null,
+			track: event.data.title || null,
+		};
+	}
+});
+
+/**
+ * YouTube attaches getVideoData() to the player container element.
+ * Returns { video_id, title, author } for whatever is currently loaded.
+ */
+function getPlayerData(): {
+	video_id?: string;
+	title?: string;
+	author?: string;
+} | null {
+	const player = document.querySelector(PLAYER_SELECTOR) as Record<
+		string,
+		unknown
+	> | null;
+	if (typeof player?.getVideoData === 'function') {
+		return player.getVideoData() as {
+			video_id?: string;
+			title?: string;
+			author?: string;
+		};
+	}
+	return null;
 }
 
-function getVideoId() {
-	const videoUrl = getVideoUrl();
+function getVideoId(): string | null {
+	return getPlayerData()?.video_id ?? Util.getYtVideoIdFromUrl(window.location.href);
+}
 
-	return Util.getYtVideoIdFromUrl(videoUrl);
+function getArtistTrack(): { artist: string | null; track: string | null } {
+	// Prefer info sent by the Zingit page — it knows exactly what's playing
+	if (injectedArtistTrack) return injectedArtistTrack;
+
+	// Fall back to player API (only works when called from page context, not here)
+	const data = getPlayerData();
+	if (data?.title) {
+		const parsed = Util.processYtVideoTitle(data.title);
+		if (parsed.artist) return parsed;
+		const author = (data.author ?? '').replace(/ - Topic$/i, '').trim();
+		return { artist: author || null, track: parsed.track ?? data.title };
+	}
+
+	// Last resort: document.title
+	const docTitle = document.title.replace(/\s*[-–]\s*YouTube\s*$/i, '').trim();
+	return Util.processYtVideoTitle(docTitle);
 }
 
 function setupConnector() {
 	const videoElement = document.querySelector(
 		VIDEO_SELECTOR,
 	) as HTMLVideoElement;
-	// Skip frames with no video element
-	if (!videoElement) {
-		return;
-	}
+	if (!videoElement) return;
 
 	videoElement.addEventListener('timeupdate', Connector.onStateChanged);
 
-	Connector.getArtistTrack = () => {
-		const videoTitle = Util.getTextFromSelectors('.ytp-title-link');
-		return Util.processYtVideoTitle(videoTitle);
-	};
+	Connector.getArtistTrack = getArtistTrack;
 
 	Connector.getCurrentTime = () => videoElement.currentTime;
 
 	Connector.getDuration = () => videoElement.duration;
 
-	Connector.isPlaying = () => {
-		return Util.hasElementClass('.html5-video-player', 'playing-mode');
-	};
+	Connector.isPlaying = () => !videoElement.paused && !videoElement.ended;
 
-	Connector.getOriginUrl = () => {
-		const videoId = getVideoId();
+	Connector.getOriginUrl = () => `https://youtu.be/${getVideoId()}`;
 
-		return `https://youtu.be/${videoId}`;
-	};
-
-	Connector.getUniqueID = () => {
-		return getVideoId();
-	};
+	Connector.getUniqueID = () => getVideoId();
 
 	Connector.applyFilter(MetadataFilter.createYouTubeFilter());
 }
 
-setupConnector();
+function setupWithRetry(attempts = 0): void {
+	if (attempts > 40) return;
+	const videoElement = document.querySelector(
+		VIDEO_SELECTOR,
+	) as HTMLVideoElement | null;
+	if (!videoElement) {
+		setTimeout(() => setupWithRetry(attempts + 1), 500);
+		return;
+	}
+	setupConnector();
+}
+
+setupWithRetry();

@@ -47,6 +47,31 @@ setupContentListeners(
 			});
 		},
 	}),
+	contentListener({
+		type: 'hiveBroadcast',
+		fn: async (payload) => {
+			return new Promise<boolean>((resolve) => {
+				const id = crypto.randomUUID();
+				function onMessage(event: MessageEvent) {
+					if (
+						event.source !== window ||
+						!event.data?.__hobbles ||
+						event.data.type !== 'hiveBroadcastResult' ||
+						event.data.id !== id
+					) {
+						return;
+					}
+					window.removeEventListener('message', onMessage);
+					resolve(!!event.data.success);
+				}
+				window.addEventListener('message', onMessage);
+				window.postMessage(
+					{ __hobbles: true, type: 'hiveBroadcast', id, payload },
+					'*',
+				);
+			});
+		},
+	}),
 );
 
 main();

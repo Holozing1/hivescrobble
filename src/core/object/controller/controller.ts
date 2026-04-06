@@ -769,7 +769,7 @@ export default class Controller {
 
 		if (isSongChanged || this.isReplayingSong) {
 			if (newState.isPlaying) {
-				this.processNewState(newState);
+				this.processNewState(newState, isSongChanged);
 			} else {
 				this.reset();
 			}
@@ -835,12 +835,19 @@ export default class Controller {
 	 * Process connector state as new one.
 	 * @param newState - Connector state
 	 */
-	private processNewState(newState: State): void {
+	private processNewState(newState: State, isSongChanged = false): void {
 		/*
 		 * We've hit a new song (or replaying the previous one)
 		 * clear any previous song and its bindings.
 		 */
 		this.isPaused = false;
+		// If the song truly changed, don't treat the old song as a replay loop —
+		// the replayDetectionTimer may have fired just before the song switch,
+		// which would otherwise cause the old song's time to be accumulated
+		// instead of finalized, inflating txCount on subsequent scrobbles.
+		if (isSongChanged) {
+			this.isReplayingSong = false;
+		}
 		this.resetState();
 		this.currentSong = new Song(newState, this.connector.meta);
 		this.currentSong.flags.isReplaying = this.isReplayingSong;
