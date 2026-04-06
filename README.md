@@ -3,157 +3,96 @@
 <p>
 	<img width="128" src="./src/icons/main/universal.svg"/>
 </p>
-<h1>Web Scrobbler</h1>
+<h1>Hobbles</h1>
 
-[![Chrome Web Store][WebStoreBadge]][WebStore]
-[![Addons.mozilla.org][AmoBadge]][Amo]
-[![iTunes App Store][AppleStoreBadge]][AppleStore]
-[![Microsoft Edge Addons][EdgeBadge]][Edge]
-
-[![Discord][DiscordBadge]][Discord]
 [![Test status][GitHubActionsBadge]][GitHubActions]
-[![Codacy Badge][CodacyBadge]][Codacy]
-[![Codacy Coverage Badge][CodacyCoverageBadge]][Codacy]
-[![Crowdin Badge][CrowdinBadge]][Crowdin]
 
 </div>
 
-Web Scrobbler helps online music listeners to scrobble their playback history.
+Hobbles is a browser extension that scrobbles your music listening history to the **Hive blockchain** via [Hive Keychain][HiveKeychain]. It is a fork of [Web Scrobbler][WebScrobbler] (MIT).
 
-## Supported Services
+Every song you listen to is recorded as a `custom_json` operation on Hive — feeless, permanent, and owned by you.
 
--   [Last.fm][LastFm]
--   [Libre.fm][LibreFm]
--   [ListenBrainz][ListenBrainz]
--   [Maloja][Maloja]
--   [Pleroma][Pleroma]
+## Supported Platforms
+
+- YouTube
+- YouTube Music
+- Spotify
+- SoundCloud
+- Apple Music
+- Tidal
+- Deezer
+- Amazon Music
+- Bandcamp
+- Audius
+- Mixcloud
+- Audiomack
+- Pandora
+- iHeartRadio
+- SiriusXM
+
+## Requirements
+
+- A Hive account
+- [Hive Keychain][HiveKeychain] browser extension installed
+
+## Setup
+
+1. Install Hobbles (see below)
+2. Open the extension settings and go to **Accounts**
+3. Click **Connect with Keychain**, enter your Hive username, and approve the login popup
+4. Done — your scrobbles will post to Hive automatically as you listen
 
 ## Installation
 
-The extension can be either downloaded from stores, or installed as an [unpacked extension][DocsUnpacked].
+Hobbles is not yet on extension stores. Install it from source:
 
-### Chrome Web Store
+### Chrome / Edge / Brave
 
-It can be installed directly from the [Chrome Web Store][WebStore] for Chrome users.
+1. Clone or download this repo
+2. Run `npm install` then `npm run build dist chrome`
+3. Open `chrome://extensions`, enable **Developer mode**
+4. Click **Load unpacked** and select the `build/chrome` folder
 
-Opera users can install the extension from Chrome Web Store using the
-[Download Chrome Extension][DownloadChromeExt] addon for Opera.
+### Firefox
 
-### Addons.mozilla.org
+1. Run `npm run build dist firefox`
+2. Open `about:debugging#/runtime/this-firefox`
+3. Click **Load Temporary Add-on** and select any file inside `build/firefox`
 
-For those who prefer Firefox, the extension is available on [Addons.mozilla.org][Amo].
+## How Scrobbling Works
 
-### Safari
-
-The extension is also available in the [Apple Store][AppleStore].
-
-
-### Microsoft Edge Add-ons
-
-The extension is also available on the [Microsoft Edge Add-ons][Edge].
-
-### Install from source code
-
-To install the extension from sources or zip file, read
-[this page][WikiUnpacked] if you're on Chrome, or [this one][WikiTempAddon]
-if you use Firefox.
+- A scrobble fires after you've listened to **60%** of a song
+- The actual broadcast to Hive happens when the song ends (not at the 60% mark), so `percent_played` reflects your real listening time
+- If you replay the same song, additional transactions are sent — one per full listen cycle (160%, 260%, …)
+- Each scrobble is a `hive_scrobble_ai` custom_json operation signed by your posting key via Keychain — no secrets are ever stored in the extension
 
 ## Development
 
-### Build the extension
-
-Before building the extension you should install dependencies:
-
 ```sh
 # Install dependencies
-> npm install
+npm install
 
-# Build the extension
-> npm run build firefox
-# or
-> npm run build chrome
-# or (requires Xcode (xcrun and xcodebuild))
-> npm run build safari
+# Dev build (auto-rebuilds on changes)
+npm run build dev chrome
+
+# Production build
+npm run build dist chrome
 ```
 
-The built extension is available in `build` directory. You can install it as an
-unpacked extension from this directory.
-
-The detailed build instruction is available [here][BuildInstructions].
-
-### Develop connectors
-
-Check the [wiki page][WikiDev] to understand development of connectors. Please
-also read our [contribution guidelines][Contributing].
-
-### Translations
-
-Follow the [Translation wiki][Translations] for details.
-
-## Media
-
-Follow [@web_scrobbler][Twitter] on Twitter to receive the latest news and updates.
-
-Join the [Discord channel][Discord] to discuss the extension.
-
-## Privacy Policy
-
-See the [privacy policy][Privacy].
+Built output goes to `build/chrome/`.
 
 ## License
 
-Licensed under the [MIT License][License].
+Fork of [Web Scrobbler][WebScrobbler] — licensed under the [MIT License][License].
 
 <!-- Badges -->
 
-[CrowdinBadge]: https://badges.crowdin.net/web-scrobbler-test/localized.svg
-[AmoBadge]: https://img.shields.io/amo/v/web-scrobbler.svg?label=firefox&logo=firefox-browser&logoColor=white
-[CodacyBadge]: https://img.shields.io/codacy/grade/32658c34c5c542d9a315ead8d5eadd0e?logo=codacy&logoColor=white
-[CodacyCoverageBadge]: https://img.shields.io/codacy/coverage/32658c34c5c542d9a315ead8d5eadd0e?logo=codacy&logoColor=white
-[DiscordBadge]: https://img.shields.io/discord/716363971070001202?logo=discord&logoColor=white&color=7289dA
-[EdgeBadge]: https://img.shields.io/badge/dynamic/json?label=edge&logo=microsoft-edge&query=%24.version&url=https%3A%2F%2Fmicrosoftedge.microsoft.com%2Faddons%2Fgetproductdetailsbycrxid%2Fobiekdelmkmlgnhddmmnpnfhngejbnnc
-[GitHubActionsBadge]: https://img.shields.io/github/actions/workflow/status/web-scrobbler/web-scrobbler/test.yml
-[WebStoreBadge]: https://img.shields.io/chrome-web-store/v/hhinaapppaileiechjoiifaancjggfjm.svg?label=chrome&logo=google-chrome&logoColor=white
-[AppleStoreBadge]: https://img.shields.io/itunes/v/6449224218?label=safari&logo=apple&logoColor=white
+[GitHubActionsBadge]: https://img.shields.io/github/actions/workflow/status/Holozing/hivescrobble/test.yml
 
-<!-- Docs -->
+<!-- Links -->
 
-[BuildInstructions]: https://github.com/web-scrobbler/web-scrobbler/wiki/Setup-development-environment
-[Contributing]: https://github.com/web-scrobbler/web-scrobbler/blob/master/.github/CONTRIBUTING.md
-[DocsUnpacked]: https://developer.chrome.com/extensions/getstarted#unpacked
-[License]: https://github.com/web-scrobbler/web-scrobbler/blob/master/LICENSE.md
-[Privacy]: https://github.com/web-scrobbler/web-scrobbler/blob/master/src/_locales/en/privacy.md
-[Translations]: https://github.com/web-scrobbler/web-scrobbler/wiki/Translate-the-extension
-
-<!-- Download -->
-
-[Amo]: https://addons.mozilla.org/en-US/firefox/addon/web-scrobbler/
-[Edge]: https://microsoftedge.microsoft.com/addons/detail/web-scrobbler/obiekdelmkmlgnhddmmnpnfhngejbnnc
-[WebStore]: https://chrome.google.com/webstore/detail/lastfm-scrobbler/hhinaapppaileiechjoiifaancjggfjm
-[AppleStore]: https://apps.apple.com/app/web-scrobbler/id6449224218
-
-<!-- Other -->
-
-[DownloadChromeExt]: https://addons.opera.com/extensions/details/app_id/kipjbhgniklcnglfaldilecjomjaddfi
-
-<!-- Related pages -->
-
-[Codacy]: https://app.codacy.com/gh/web-scrobbler/web-scrobbler/dashboard
-[Discord]: https://discord.com/invite/u99wNWw
-[GitHubActions]: https://github.com/web-scrobbler/web-scrobbler/actions
-[Twitter]: https://twitter.com/web_scrobbler
-[Crowdin]: https://crowdin.com/project/web-scrobbler-test
-
-<!-- Services -->
-
-[LastFm]: http://www.last.fm/
-[LibreFm]: https://libre.fm/
-[ListenBrainz]: https://listenbrainz.org/
-[Maloja]: https://github.com/krateng/maloja
-[Pleroma]: https://pleroma.social/
-
-<!-- Wiki pages -->
-
-[WikiDev]: https://github.com/web-scrobbler/web-scrobbler/wiki/Connectors-development
-[WikiTempAddon]: https://github.com/web-scrobbler/web-scrobbler/wiki/Install-a-temporary-add-on
-[WikiUnpacked]: https://github.com/web-scrobbler/web-scrobbler/wiki/Install-an-unpacked-extension
+[GitHubActions]: https://github.com/Holozing/hivescrobble/actions
+[HiveKeychain]: https://hive-keychain.com
+[WebScrobbler]: https://github.com/web-scrobbler/web-scrobbler
+[License]: ./LICENSE.md

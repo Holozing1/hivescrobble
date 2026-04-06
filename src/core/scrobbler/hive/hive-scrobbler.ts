@@ -42,8 +42,8 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 
 	/** Cross-restart persistence: read finalized keys from session storage. */
 	private async getFinalizedKeys(): Promise<Set<number>> {
-		const data = await browser.storage.session.get('finalizedKeys')
-		return new Set<number>(data.finalizedKeys ?? [])
+		const data = await browser.storage.session.get({ finalizedKeys: [] as number[] })
+		return new Set<number>(data.finalizedKeys as number[] ?? [])
 	}
 
 	private async addFinalizedKey(key: number): Promise<void> {
@@ -208,7 +208,7 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 				}),
 		});
 
-		const username = results?.[0]?.result;
+		const username = results?.[0]?.result as string | undefined;
 		if (!username) {
 			throw new Error(ServiceCallResult.ERROR_AUTH);
 		}
@@ -243,14 +243,13 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			app: APP_NAME,
 			artist: song.getArtist() ?? '',
 			title: song.getTrack() ?? '',
+			timestamp: new Date(song.metadata.startTimestamp * 1000).toISOString(),
 		};
 
 		const album = song.getAlbum();
 		if (album) {
 			payload.album = album;
 		}
-
-		payload.timestamp = new Date(song.metadata.startTimestamp * 1000).toISOString();
 
 		if (nowPlaying) {
 			payload.now_playing = true;

@@ -54,14 +54,15 @@ function getArtistTrack(): { artist: string | null; track: string | null } {
 	const data = getPlayerData();
 	if (data?.title) {
 		const parsed = Util.processYtVideoTitle(data.title);
-		if (parsed.artist) return parsed;
+		if (parsed.artist) return { artist: parsed.artist ?? null, track: parsed.track ?? null };
 		const author = (data.author ?? '').replace(/ - Topic$/i, '').trim();
 		return { artist: author || null, track: parsed.track ?? data.title };
 	}
 
 	// Last resort: document.title
 	const docTitle = document.title.replace(/\s*[-–]\s*YouTube\s*$/i, '').trim();
-	return Util.processYtVideoTitle(docTitle);
+	const fallback = Util.processYtVideoTitle(docTitle);
+	return { artist: fallback.artist ?? null, track: fallback.track ?? null };
 }
 
 function setupConnector() {

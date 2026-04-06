@@ -113,9 +113,9 @@ const GET_SECONDS_TO_SCROBBLE_DATA = [
 		expected: 95,
 	},
 	{
-		description: 'should return max time for long songs',
-		args: [Util.MAX_SCROBBLE_TIME * 2 + 1, scrobblePercent],
-		expected: Util.MAX_SCROBBLE_TIME,
+		description: 'should return proportional time for long songs',
+		args: [600, scrobblePercent],
+		expected: 300,
 	},
 ];
 
