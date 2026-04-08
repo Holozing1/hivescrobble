@@ -139,10 +139,23 @@ async function onTabRemoved(tabId: number) {
 	const newActiveTab = await getCurrentTabId();
 	updateTabsFromTabList(filteredTabs, newActiveTab);
 
-	const tabs = await disabledTabs.get();
-	if (tabs?.[tabId]) {
-		delete tabs[tabId];
-		disabledTabs.set(tabs);
+	const dtabs = await disabledTabs.get();
+	if (dtabs?.[tabId]) {
+		delete dtabs[tabId];
+		disabledTabs.set(dtabs);
+	}
+
+	// If a scrobbled song was playing when this tab closed, finalize it now
+	// using any other open tab as the Keychain broadcast channel.
+	const hpfKey = `hpf_${tabId}`;
+	const stored = await browser.storage.session.get(hpfKey);
+	const pending = stored[hpfKey] as { song: CloneableSong; playSeconds: number } | undefined;
+	if (pending) {
+		await browser.storage.session.remove(hpfKey);
+		const openTabs = await browser.tabs.query({ url: ['http://*/*', 'https://*/*'] });
+		const fallbackTabId = openTabs.find(t => t.id !== undefined)?.id ?? -1;
+		const song = new ClonedSong(pending.song, fallbackTabId);
+		void hiveScrobbler.finalize(pending.playSeconds, song);
 	}
 }
 
@@ -518,12 +531,32 @@ setupBackgroundListeners(
 	/**
 	 * Listener called by a controller when a scrobbled song finishes playing.
 	 * Broadcasts the finalized scrobble to Hive with accurate play percentage.
+	 * Also clears the tab-close safety record — normal flow won the race.
 	 */
 	backgroundListener({
 		type: 'hiveFinalize',
 		fn: (payload, sender) => {
-			const song = new ClonedSong(payload.song, sender.tab?.id ?? -1);
+			const tabId = sender.tab?.id ?? -1;
+			const song = new ClonedSong(payload.song, tabId);
 			void hiveScrobbler.finalize(payload.playSeconds, song);
+			if (tabId >= 0) {
+				void browser.storage.session.remove(`hpf_${tabId}`);
+			}
+		},
+	}),
+
+	/**
+	 * Listener called when a song crosses the scrobble threshold.
+	 * Stores a safety record so onTabRemoved can finalize if the tab closes
+	 * before the next song starts (which is when hiveFinalize normally fires).
+	 */
+	backgroundListener({
+		type: 'hiveSavePending',
+		fn: (payload, sender) => {
+			const tabId = sender.tab?.id;
+			if (typeof tabId === 'number' && tabId >= 0) {
+				void browser.storage.session.set({ [`hpf_${tabId}`]: payload });
+			}
 		},
 	}),
 );

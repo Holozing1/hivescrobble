@@ -1380,6 +1380,15 @@ export default class Controller {
 			this.currentSong.flags.isScrobbled = true;
 			this.setMode(ControllerMode.Scrobbled);
 
+			// Save to background so it can finalize if this tab closes before the next song starts.
+			void sendContentMessage({
+				type: 'hiveSavePending',
+				payload: {
+					song: this.currentSong.getCloneableData(),
+					playSeconds: this.accumulatedPlaySeconds + this.playbackTimer.getElapsed(),
+				},
+			});
+
 			this.onSongUpdated();
 		} else if (areAllResults(results[0], ServiceCallResult.RESULT_IGNORE)) {
 			this.debugLog('Song is ignored by service');

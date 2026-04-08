@@ -7,12 +7,18 @@ export {};
 const VIDEO_SELECTOR = '.html5-main-video';
 const PLAYER_SELECTOR = '.html5-video-player';
 
-// Track info injected by the Zingit page via postMessage
+// Track info injected by the Zingit page via postMessage.
+// We hold it as "pending" keyed to the expected videoId and only commit it
+// once the player has actually switched to that video — this prevents a race
+// where the artist/track updates before the uniqueID does, causing the
+// controller to see two separate song sessions for the same song.
 let injectedArtistTrack: { artist: string | null; track: string | null } | null = null;
+let pendingInjected: { videoId: string; artist: string | null; track: string | null } | null = null;
 
 window.addEventListener('message', (event: MessageEvent) => {
 	if (event.data?.__hobbles && event.data.type === 'zingitTrack') {
-		injectedArtistTrack = {
+		pendingInjected = {
+			videoId: event.data.videoId || null,
 			artist: event.data.artist || null,
 			track: event.data.title || null,
 		};
@@ -47,6 +53,12 @@ function getVideoId(): string | null {
 }
 
 function getArtistTrack(): { artist: string | null; track: string | null } {
+	// Flush pending injected info once the player has actually switched videos
+	if (pendingInjected && getVideoId() === pendingInjected.videoId) {
+		injectedArtistTrack = { artist: pendingInjected.artist, track: pendingInjected.track };
+		pendingInjected = null;
+	}
+
 	// Prefer info sent by the Zingit page — it knows exactly what's playing
 	if (injectedArtistTrack) return injectedArtistTrack;
 

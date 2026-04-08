@@ -123,6 +123,13 @@ interface ContentCommunications {
 		};
 		response: void;
 	};
+	hiveSavePending: {
+		payload: {
+			playSeconds: number;
+			song: CloneableSong;
+		};
+		response: void;
+	};
 }
 
 interface BackgroundCommunications {
