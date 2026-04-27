@@ -201,9 +201,7 @@ function SongDetails(props: {
 	return (
 		<div class={styles.songDetails}>
 			<TrackData song={props.song} />
-			<Show when={isIos()}>
-				<IOSLoveTrack song={props.song} tab={props.tab} />
-			</Show>
+			{/* Removed: iOS love button — see comment in TrackControls. */}
 			<TrackMetadata song={props.song} />
 			<Show when={!isIos()}>
 				<TrackControls
@@ -319,29 +317,9 @@ function TrackControls(props: {
 			>
 				<BlockOutlined />
 			</button>
-			<button
-				class={`${styles.controlButton}${
-					props.song()?.metadata.userloved ? ` ${styles.active}` : ''
-				}`}
-				onClick={() => toggleLove(props.tab, props.song)}
-				title={
-					props.song()?.metadata.userloved
-						? t('infoUnlove')
-						: t('infoLove')
-				}
-			>
-				<span class={styles.nonHover}>
-					<FavoriteOutlined />
-				</span>
-				<span class={styles.hover}>
-					<Show
-						when={props.song()?.metadata.userloved}
-						fallback={<FavoriteOutlined />}
-					>
-						<HeartBrokenOutlined />
-					</Show>
-				</span>
-			</button>
+			{/* Removed: love/unlove button — Last.fm-era feature with no
+			    Hive equivalent yet. Per-track reactions move to the
+			    website later. */}
 		</div>
 	);
 }

@@ -112,10 +112,10 @@ export default function ConnectorOverrideOptions(props: {
 }
 
 /**
- * Connectors shown to all users by default.
- * Everything else is available on request.
+ * Music connectors shown to all users by default. Audio-streaming sites
+ * that scrobble as kind=song.
  */
-const FEATURED_CONNECTOR_IDS = new Set([
+const MUSIC_CONNECTOR_IDS = new Set([
 	'youtube',
 	'youtube-music',
 	'youtube-embed',
@@ -134,12 +134,34 @@ const FEATURED_CONNECTOR_IDS = new Set([
 	'siriusxm-player',
 ]);
 
-const featuredConnectors = connectors.filter((c) =>
-	FEATURED_CONNECTOR_IDS.has(c.id),
+/**
+ * Video + podcast connectors. Movies/TV scrobble as kind=movie or
+ * kind=episode; podcast players scrobble as kind=podcast.
+ */
+const VIDEO_PODCAST_CONNECTOR_IDS = new Set([
+	// Movies & TV
+	'netflix',
+	'disneyplus',
+	'max',
+	'amazon-prime',
+	// Podcasts
+	'overcast',
+	'pocketcasts',
+]);
+
+// Preserve the order from connectors.ts within each category so the lists
+// stay deterministic across builds.
+const musicConnectors = connectors.filter((c) =>
+	MUSIC_CONNECTOR_IDS.has(c.id),
+);
+const videoPodcastConnectors = connectors.filter((c) =>
+	VIDEO_PODCAST_CONNECTOR_IDS.has(c.id),
 );
 
 /**
- * Connector Override Options list
+ * Connector Override Options — split into two grouped sections:
+ * music streamers above, video + podcast platforms below. Each section
+ * gets its own header so users can find the right connector by purpose.
  */
 function ConnectorOptions(props: {
 	setActiveModal: Setter<ModalType>;
@@ -147,7 +169,10 @@ function ConnectorOptions(props: {
 }) {
 	return (
 		<Suspense fallback={<p>{t('optionsLoadingConnectorOptions')}</p>}>
-			<For each={featuredConnectors}>
+			<li style="margin-top: 1rem; font-size: 0.85rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em;">
+				Music
+			</li>
+			<For each={musicConnectors}>
 				{(connector) => (
 					<ConnectorOption
 						setActiveModal={props.setActiveModal}
@@ -156,6 +181,20 @@ function ConnectorOptions(props: {
 					/>
 				)}
 			</For>
+
+			<li style="margin-top: 1.25rem; font-size: 0.85rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em;">
+				Movies, TV &amp; Podcasts
+			</li>
+			<For each={videoPodcastConnectors}>
+				{(connector) => (
+					<ConnectorOption
+						setActiveModal={props.setActiveModal}
+						modal={props.modal}
+						connector={connector}
+					/>
+				)}
+			</For>
+
 			<li style="margin-top: 0.75rem; font-size: 0.8rem; opacity: 0.45;">
 				Looking for a different platform? More connectors are available on request.
 			</li>
@@ -281,15 +320,9 @@ function ConnectorOverrideOptionDetails(props: {
 					setOverrideOptions={setOverrideOptions}
 					connectorOverrideOptions={connectorOverrideOptions}
 				/>
-				<ConnectorTripleCheckbox
-					title={t('optionAutoToggleLoveTitle')}
-					label={t('optionAutoToggleLove')}
-					connector={props.connector}
-					option={Options.AUTO_TOGGLE_LOVE}
-					overrideOptions={overrideOptions}
-					setOverrideOptions={setOverrideOptions}
-					connectorOverrideOptions={connectorOverrideOptions}
-				/>
+				{/* Removed: "Love/unlove tracks through players" — Last.fm-era
+				    feature with no Hive equivalent yet. Liking/loving will
+				    move to the website (per-track reactions) once that lands. */}
 
 				<h3 id={`${props.connector.id}-scrobble-behavior`}>
 					{t('optionsScrobbleBehavior')}
