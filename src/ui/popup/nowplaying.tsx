@@ -17,10 +17,7 @@ import browser from 'webextension-polyfill';
 import ClonedSong from '@/core/object/cloned-song';
 import Base from './base';
 import {
-	EditOutlined,
 	BlockOutlined,
-	FavoriteOutlined,
-	HeartBrokenOutlined,
 	RestartAltOutlined,
 } from '@/ui/components/icons';
 import { sendBackgroundMessage } from '@/util/communication';
@@ -153,16 +150,7 @@ function NowPlayingContextMenu(props: {
 }) {
 	const [navigatorResource] = createResource(getMobileNavigatorGroup);
 	const items = createMemo(() => {
-		const items: Navigator = [
-			{
-				namei18n:
-					props.tab()?.permanentMode === ControllerMode.Playing
-						? 'infoEditTitleShort'
-						: 'infoEditUnableTitleShort',
-				icon: EditOutlined,
-				action: () => props.setIsEditing(true),
-			},
-		];
+		const items: Navigator = [];
 		if (props.song()?.flags.isCorrectedByUser) {
 			items.push({
 				namei18n:
@@ -273,18 +261,6 @@ function TrackControls(props: {
 }) {
 	return (
 		<div class={styles.controlButtons}>
-			<button
-				class={styles.controlButton}
-				disabled={props.tab()?.permanentMode !== ControllerMode.Playing}
-				title={
-					props.tab()?.permanentMode === ControllerMode.Playing
-						? t('infoEditTitle')
-						: t('infoEditUnableTitle')
-				}
-				onClick={() => props.setIsEditing(true)}
-			>
-				<EditOutlined />
-			</button>
 			<Show when={props.song()?.flags.isCorrectedByUser}>
 				<button
 					class={styles.controlButton}
