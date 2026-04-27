@@ -40,16 +40,48 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	 */
 	private static readonly lockedKeys = new Set<number>();
 
-	/** Cross-restart persistence: read finalized keys from session storage. */
-	private async getFinalizedKeys(): Promise<Set<number>> {
-		const data = await browser.storage.session.get({ finalizedKeys: [] as number[] })
-		return new Set<number>(data.finalizedKeys as number[] ?? [])
+	/** Set once per SW lifetime so we sweep old keys exactly once. */
+	private static prunedThisSession = false;
+
+	/**
+	 * Per-key dedup in session storage: each finalized scrobble writes its own
+	 * `finalized_<startTimestamp>` key. Avoids the read-modify-write race the
+	 * old shared-array approach had (two concurrent calls could both read an
+	 * empty array and both proceed to broadcast).
+	 */
+	private storageKeyFor(key: number): string {
+		return `finalized_${key}`;
 	}
 
-	private async addFinalizedKey(key: number): Promise<void> {
-		const keys = await this.getFinalizedKeys()
-		keys.add(key)
-		await browser.storage.session.set({ finalizedKeys: [...keys] })
+	private async isFinalized(key: number): Promise<boolean> {
+		const sk = this.storageKeyFor(key);
+		const data = await browser.storage.session.get(sk);
+		return Boolean(data[sk]);
+	}
+
+	private async markFinalized(key: number): Promise<void> {
+		await browser.storage.session.set({ [this.storageKeyFor(key)]: true });
+	}
+
+	/**
+	 * Prune `finalized_*` entries older than 6 hours. Session storage is
+	 * cleared when the browser closes, but within a long-running session a
+	 * heavy listener could accumulate keys toward Chrome's ~10MB quota.
+	 */
+	private async pruneOldFinalizedKeys(): Promise<void> {
+		try {
+			const all = await browser.storage.session.get(null);
+			const cutoff = Math.floor(Date.now() / 1000) - 6 * 3600;
+			const toRemove: string[] = [];
+			for (const k of Object.keys(all)) {
+				if (!k.startsWith('finalized_')) continue;
+				const ts = parseInt(k.slice('finalized_'.length), 10);
+				if (!isNaN(ts) && ts < cutoff) toRemove.push(k);
+			}
+			if (toRemove.length) await browser.storage.session.remove(toRemove);
+		} catch {
+			// Pruning is best-effort; never let it break a scrobble.
+		}
 	}
 
 	/** @override */
@@ -137,33 +169,93 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	}
 
 	/**
-	 * Called when a scrobbled song finishes playing (via hiveFinalize message).
-	 * Broadcasts the scrobble with accurate play percentage and 160% double-listen detection.
+	 * Called when a scrobbled song or video finishes playing (via hiveFinalize message).
+	 *
+	 * Music branch: 1 tx at ≥60%, 2nd at ≥160% (capped at 2) for double-listens.
+	 *
+	 * Long-form video branch (movie/episode): single tx at ≥80% — Trakt-industry
+	 * standard for "watched". Below the threshold we don't broadcast at all.
+	 * Double-watch in a single playback session isn't a real thing for video.
 	 */
 	public async finalize(playSeconds: number, song: ClonedSong): Promise<void> {
 		const key = song.metadata.startTimestamp;
+		const isLongForm =
+			song.parsed.videoKind === 'movie' || song.parsed.videoKind === 'episode';
 
 		// Synchronous in-memory claim — prevents race within the same SW lifecycle.
 		if (HiveScrobbler.lockedKeys.has(key)) return;
 		HiveScrobbler.lockedKeys.add(key);
 
-		// Cross-restart persistence check — catches re-triggers after SW killed/restarted.
-		const finalizedKeys = await this.getFinalizedKeys()
-		if (finalizedKeys.has(key)) return;
-		await this.addFinalizedKey(key);
+		// Once-per-SW-lifetime sweep of stale dedup entries.
+		if (!HiveScrobbler.prunedThisSession) {
+			HiveScrobbler.prunedThisSession = true;
+			void this.pruneOldFinalizedKeys();
+		}
 
 		const duration = song.getDuration() ?? 0;
-		// 1 tx at ≥60%, then 1 more for each additional 100% of duration (160%, 260%, …).
-		// Cap at 3 to guard against accumulated time bugs causing runaway broadcasts.
-		const txCount = Math.min(2, duration > 0 ? 1 + Math.floor(Math.max(0, (playSeconds / duration) - 0.6)) : 1);
+		const progress = duration > 0 ? playSeconds / duration : 0;
+
+		if (isLongForm) {
+			// Threshold gate — don't broadcast unwatched / abandoned views.
+			if (progress < 0.8) return;
+
+			// Content-keyed dedup so two playbacks of the same movie within
+			// the same hour can't both broadcast. Hour-bucketed so legitimate
+			// same-day rewatches (>1h apart) still count.
+			const contentKey = this.contentDedupKey(song);
+			if (await this.isFinalized(contentKey)) return;
+			await this.markFinalized(contentKey);
+
+			const percentPlayed = Math.min(100, Math.round(progress * 100));
+			void this.broadcastScrobble(song, false, percentPlayed);
+			return;
+		}
+
+		// Music branch — original behaviour preserved.
+		if (await this.isFinalized(key)) return;
+		await this.markFinalized(key);
+
+		const txCount = Math.min(2, duration > 0 ? 1 + Math.floor(Math.max(0, progress - 0.6)) : 1);
 
 		for (let i = 0; i < txCount; i++) {
-			// Each tx reflects how far into its own 100% cycle the listener got.
 			const percentPlayed = duration > 0
-				? Math.min(100, Math.round(((playSeconds / duration) - i) * 100))
+				? Math.min(100, Math.round((progress - i) * 100))
 				: 0;
 			void this.broadcastScrobble(song, false, percentPlayed);
 		}
+	}
+
+	/**
+	 * Build a dedup key for video scrobbles that survives SW restart but
+	 * still allows legitimate rewatches >1h apart. Format:
+	 *   v_<tmdbId | uniqueID>_<unix-hour>
+	 * Keys older than 6h get pruned by pruneOldFinalizedKeys (numeric keys
+	 * only — these string keys live under a separate prefix and self-expire
+	 * once their hour bucket falls outside any conceivable rewatch window).
+	 */
+	private contentDedupKey(song: ClonedSong): number {
+		// Cheap stable string → number hash so it shares the lockedKeys set.
+		// Prefer canonical Wikipedia URL > IMDb ID > connector unique-ID >
+		// title fallback. Whichever's present, the same content hashes
+		// identically across same-hour replays.
+		const id =
+			song.parsed.wikipediaUrl ??
+			song.parsed.imdbId ??
+			song.parsed.uniqueID ??
+			`${song.parsed.seriesTitle ?? ''}|${song.parsed.track ?? ''}|s${song.parsed.season ?? ''}e${song.parsed.episode ?? ''}`;
+		const hourBucket = Math.floor(Date.now() / 3_600_000);
+		return this.hashString(`v|${id}|${hourBucket}`);
+	}
+
+	private hashString(s: string): number {
+		// djb2 — collisions are fine here; this is a dedup hint, not a security primitive.
+		let hash = 5381;
+		for (let i = 0; i < s.length; i++) {
+			hash = ((hash << 5) + hash + s.charCodeAt(i)) | 0;
+		}
+		// Bias into a non-overlapping range from music's startTimestamp keys
+		// (which are unix seconds, well below 1e10).
+		return hash + 0x4_0000_0000;
 	}
 
 	/**
@@ -239,27 +331,62 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			return ServiceCallResult.ERROR_OTHER;
 		}
 
+		// videoKind ('movie' | 'episode') wins when the connector reports it —
+		// long-form video has its own payload shape. Falls back to the music
+		// disposition (podcast > video > song).
+		const videoKind = song.parsed.videoKind ?? null;
+		const kind: HiveScrobblePayload['kind'] = videoKind
+			? videoKind
+			: song.parsed.isPodcast
+				? 'podcast'
+				: song.parsed.isVideo
+					? 'video'
+					: 'song';
+		const isLongForm = kind === 'movie' || kind === 'episode';
+
 		const payload: HiveScrobblePayload & { now_playing?: boolean } = {
 			app: APP_NAME,
-			artist: song.getArtist() ?? '',
+			kind,
 			title: song.getTrack() ?? '',
 			timestamp: new Date(song.metadata.startTimestamp * 1000).toISOString(),
 		};
 
-		const album = song.getAlbum();
-		if (album) {
-			payload.album = album;
+		if (isLongForm) {
+			// Video-side fields. The metadata pipeline stage (Wikipedia +
+			// Wikidata) fills wikipediaUrl + imdbId + poster URL before
+			// broadcast. Poster URL doubles as `trackArt` on song.parsed
+			// (so the popup renders it inline) and as `poster_url` on the
+			// broadcast payload (so feed cards on zingit-web can render
+			// without extra fetches).
+			if (song.parsed.wikipediaUrl) payload.wikipedia_url = song.parsed.wikipediaUrl;
+			if (song.parsed.imdbId) payload.imdb_id = song.parsed.imdbId;
+			if (song.parsed.year) payload.year = song.parsed.year;
+			const poster = song.parsed.trackArt ?? song.metadata.trackArtUrl;
+			if (poster) payload.poster_url = poster;
+			if (kind === 'episode') {
+				if (song.parsed.season) payload.season = song.parsed.season;
+				if (song.parsed.episode) payload.episode_number = song.parsed.episode;
+				if (song.parsed.seriesTitle) payload.series_title = song.parsed.seriesTitle;
+				if (song.parsed.seriesWikipediaUrl) payload.series_wikipedia_url = song.parsed.seriesWikipediaUrl;
+				if (song.parsed.seriesImdbId) payload.series_imdb_id = song.parsed.seriesImdbId;
+			}
+		} else {
+			// Music-side fields.
+			payload.artist = song.getArtist() ?? '';
+			const album = song.getAlbum();
+			if (album) {
+				payload.album = album;
+			}
+			const duration = song.getDuration();
+			if (duration) {
+				const m = Math.floor(duration / 60);
+				const s = Math.floor(duration % 60);
+				payload.duration = `${m}:${s.toString().padStart(2, '0')}`;
+			}
 		}
 
 		if (nowPlaying) {
 			payload.now_playing = true;
-		}
-
-		const duration = song.getDuration();
-		if (duration) {
-			const m = Math.floor(duration / 60);
-			const s = Math.floor(duration % 60);
-			payload.duration = `${m}:${s.toString().padStart(2, '0')}`;
 		}
 
 		if (percentPlayed !== undefined) {
@@ -273,9 +400,17 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			payload.url = url;
 		}
 
+		const displayLeft = isLongForm
+			? payload.series_title || payload.title
+			: payload.artist;
+		const displayRight = isLongForm
+			? payload.series_title
+				? `${payload.title}${payload.season && payload.episode_number ? ` (S${payload.season}E${payload.episode_number})` : ''}`
+				: payload.title
+			: payload.title;
 		const displayMsg = nowPlaying
-			? `Now playing: ${payload.artist} - ${payload.title}`
-			: `Scrobble: ${payload.artist} - ${payload.title}`;
+			? `Now playing: ${displayLeft ? `${displayLeft} - ` : ''}${displayRight}`
+			: `Scrobble: ${displayLeft ? `${displayLeft} - ` : ''}${displayRight}`;
 
 		try {
 			await injectRelay(tabId);

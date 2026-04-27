@@ -18,6 +18,48 @@ export interface ConnectorMeta {
 
 export default <ConnectorMeta[]>[
 	{
+		label: 'Netflix',
+		matches: ['*://*.netflix.com/watch/*'],
+		js: 'netflix.js',
+		id: 'netflix',
+	},
+	{
+		label: 'Disney+',
+		matches: [
+			'*://*.disneyplus.com/video/*',
+			'*://*.disneyplus.com/play/*',
+			'*://*.disneyplus.com/movies/*',
+			'*://*.disneyplus.com/series/*',
+		],
+		js: 'disneyplus.js',
+		id: 'disneyplus',
+	},
+	{
+		label: 'Max',
+		matches: [
+			'*://*.max.com/video/*',
+			'*://*.max.com/movie/*',
+			'*://*.max.com/show/*',
+			'*://*.hbomax.com/video/*',
+			'*://*.hbo.com/video/*',
+		],
+		js: 'max.js',
+		id: 'max',
+	},
+	{
+		label: 'Amazon Prime Video',
+		matches: [
+			'*://*.primevideo.com/*',
+			'*://*.amazon.com/gp/video/*',
+			'*://*.amazon.com/Prime-Video/*',
+			'*://*.amazon.co.uk/gp/video/*',
+			'*://*.amazon.co.jp/gp/video/*',
+			'*://*.amazon.de/gp/video/*',
+		],
+		js: 'amazon-prime.js',
+		id: 'amazon-prime',
+	},
+	{
 		label: 'YouTube Embed',
 		matches: ['*://*.youtube.com/embed/*'],
 		js: 'youtube-embed.js',

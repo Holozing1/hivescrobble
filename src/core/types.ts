@@ -70,6 +70,30 @@ export interface State extends BaseState {
 	isPodcast?: boolean | null;
 
 	/**
+	 * Whether the current track is a non-music video (e.g. YouTube Entertainment
+	 * category). Distinct from isPodcast — a true value means "treat as video".
+	 */
+	isVideo?: boolean | null;
+
+	/**
+	 * For long-form video (movie/TV episode) scrobbles. When set, the kind
+	 * field on the broadcast payload uses 'movie' or 'episode' instead of
+	 * 'song'/'video'/'podcast'. The connector populates basics directly;
+	 * the metadata pipeline stage enriches `wikipediaUrl` / `imdbId` /
+	 * `seriesWikipediaUrl` / `seriesImdbId` after the fact via Wikipedia
+	 * + Wikidata.
+	 */
+	videoKind?: 'movie' | 'episode' | null;
+	wikipediaUrl?: string | null;
+	seriesWikipediaUrl?: string | null;
+	imdbId?: string | null;
+	seriesImdbId?: string | null;
+	year?: number | null;
+	season?: number | null;
+	episode?: number | null;
+	seriesTitle?: string | null;
+
+	/**
 	 * Origin URL.
 	 */
 	originUrl?: string | null;

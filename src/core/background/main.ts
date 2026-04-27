@@ -152,10 +152,62 @@ async function onTabRemoved(tabId: number) {
 	const pending = stored[hpfKey] as { song: CloneableSong; playSeconds: number } | undefined;
 	if (pending) {
 		await browser.storage.session.remove(hpfKey);
-		const openTabs = await browser.tabs.query({ url: ['http://*/*', 'https://*/*'] });
-		const fallbackTabId = openTabs.find(t => t.id !== undefined)?.id ?? -1;
-		const song = new ClonedSong(pending.song, fallbackTabId);
-		void hiveScrobbler.finalize(pending.playSeconds, song);
+		await finalizePending(pending);
+	}
+}
+
+/**
+ * Broadcast a pending scrobble via any still-open http/https tab.
+ * hive-scrobbler dedups by startTimestamp, so calling this twice for the same
+ * song is safe — second call is a no-op.
+ */
+async function finalizePending(pending: {
+	song: CloneableSong;
+	playSeconds: number;
+}): Promise<void> {
+	const openTabs = await browser.tabs.query({
+		url: ['http://*/*', 'https://*/*'],
+	});
+	const fallbackTabId = openTabs.find((t) => t.id !== undefined)?.id ?? -1;
+	const song = new ClonedSong(pending.song, fallbackTabId);
+	void hiveScrobbler.finalize(pending.playSeconds, song);
+}
+
+/**
+ * Run on SW startup: finalize any `hpf_<tabId>` entry whose tab no longer
+ * exists. Live tabs are left alone — their controllers run their own idle
+ * timer (or the next song change / tab close will pick them up).
+ */
+async function sweepOrphanedPendingFinalizes(): Promise<void> {
+	let session: Record<string, unknown>;
+	try {
+		session = await browser.storage.session.get(null);
+	} catch {
+		return;
+	}
+	const hpfKeys = Object.keys(session).filter((k) => k.startsWith('hpf_'));
+	for (const key of hpfKeys) {
+		const tabId = parseInt(key.slice('hpf_'.length), 10);
+		if (!Number.isFinite(tabId)) {
+			await browser.storage.session.remove(key);
+			continue;
+		}
+		let tabAlive = false;
+		try {
+			await browser.tabs.get(tabId);
+			tabAlive = true;
+		} catch {
+			tabAlive = false;
+		}
+		if (tabAlive) continue;
+
+		const pending = session[key] as
+			| { song: CloneableSong; playSeconds: number }
+			| undefined;
+		await browser.storage.session.remove(key);
+		if (pending) {
+			await finalizePending(pending);
+		}
 	}
 }
 
@@ -607,6 +659,11 @@ function onStartup() {
 			showAuthNotification();
 		}
 	});
+
+	// SW just woke up. Sweep any hpf_<tabId> pending-finalize entries whose tab
+	// is gone — onTabRemoved would've caught them if the SW was alive when the
+	// tab closed, but if it wasn't, the entry sits orphaned until this sweep.
+	void sweepOrphanedPendingFinalizes();
 
 	browser.contextMenus?.create({
 		id: contextMenus.ENABLE_CONNECTOR,

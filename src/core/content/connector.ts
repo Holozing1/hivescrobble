@@ -357,6 +357,40 @@ export default class BaseConnector {
 	public isPodcast: () => boolean | null = () => false;
 
 	/**
+	 * Default implementation to check whether the current track is a non-music
+	 * video (e.g. YouTube Entertainment category). Overridden by connectors
+	 * like YouTube that know how to tell music from non-music content.
+	 */
+	public isVideo: () => boolean | null = () => false;
+
+	/**
+	 * For long-form video connectors (Netflix, Disney+, etc.) — what kind of
+	 * scrobble this is. Movies and TV episodes are routed differently in the
+	 * Hive payload. Music connectors leave this null.
+	 */
+	public getVideoKind: () => 'movie' | 'episode' | null = () => null;
+
+	/**
+	 * For TV episodes — season number. Null for movies and music.
+	 */
+	public getSeason: () => number | null = () => null;
+
+	/**
+	 * For TV episodes — episode number within the season. Null for movies/music.
+	 */
+	public getEpisode: () => number | null = () => null;
+
+	/**
+	 * For TV episodes — the parent series title. Null for movies/music.
+	 */
+	public getSeriesTitle: () => string | null = () => null;
+
+	/**
+	 * Release year. Used by the TMDB resolver to disambiguate titles.
+	 */
+	public getYear: () => number | null = () => null;
+
+	/**
 	 * Default implementation used to get the track art URL from the selector.
 	 *
 	 * Override this method for more complex behaviour.
@@ -654,8 +688,18 @@ export default class BaseConnector {
 		isPlaying: true,
 		trackArt: null,
 		isPodcast: false,
+		isVideo: false,
 		originUrl: null,
 		scrobblingDisallowedReason: null,
+		videoKind: null,
+		season: null,
+		episode: null,
+		seriesTitle: null,
+		year: null,
+		wikipediaUrl: null,
+		seriesWikipediaUrl: null,
+		imdbId: null,
+		seriesImdbId: null,
 	};
 
 	// #v-ifdef VITE_DEV
@@ -917,8 +961,14 @@ export default class BaseConnector {
 				currentTime: this.getCurrentTime(),
 				isPlaying: this.isPlaying(),
 				isPodcast: this.isPodcast(),
+				isVideo: this.isVideo(),
 				originUrl: this.getOriginUrl(),
 				scrobblingDisallowedReason: this.scrobblingDisallowedReason(),
+				videoKind: this.getVideoKind(),
+				season: this.getSeason(),
+				episode: this.getEpisode(),
+				seriesTitle: this.getSeriesTitle(),
+				year: this.getYear(),
 			};
 
 			let mediaSessionInfo = null;

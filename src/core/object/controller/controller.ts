@@ -91,6 +91,14 @@ export default class Controller {
 	private accumulatedPlaySeconds = 0;
 	private pendingFinalizeSong: CloneableSong | null = null;
 
+	/**
+	 * Fires hiveFinalize if playback stays paused/ended for this long without a song change.
+	 * Catches the case where a user stops playing and never starts a new song —
+	 * `resetState()` never runs, so the scrobble would otherwise sit pending forever.
+	 */
+	private static readonly HIVE_IDLE_FINALIZE_MS = 30_000;
+	private hiveIdleTimer: ReturnType<typeof setTimeout> | null = null;
+
 	private isEditing = false;
 	private setNotEditingTimeout = setTimeout(() => {
 		// do nothing
@@ -360,36 +368,6 @@ export default class Controller {
 					} else {
 						void this.setSongNowPlaying();
 					}
-				},
-			}),
-			contentListener({
-				type: 'hiveBroadcast',
-				fn: async (payload) => {
-					return new Promise<boolean>((resolve) => {
-						const id = crypto.randomUUID();
-						function onMessage(event: MessageEvent) {
-							if (
-								event.source !== window ||
-								!event.data?.__hobbles ||
-								event.data.type !== 'hiveBroadcastResult' ||
-								event.data.id !== id
-							) {
-								return;
-							}
-							window.removeEventListener('message', onMessage);
-							resolve(!!(event.data.success));
-						}
-						window.addEventListener('message', onMessage);
-						window.postMessage(
-							{
-								__hobbles: true,
-								type: 'hiveBroadcast',
-								id,
-								payload,
-							},
-							'*',
-						);
-					});
 				},
 			}),
 		);
@@ -941,6 +919,7 @@ export default class Controller {
 	 */
 	private resetState(): void {
 		this.dispatchEvent(ControllerEvents.ControllerReset);
+		this.clearHiveIdleFinalize();
 
 		if (this.isReplayingSong) {
 			// Same song looping — accumulate elapsed time, hold off on broadcast
@@ -1244,6 +1223,11 @@ export default class Controller {
 
 		this.isPaused = true;
 		this.onModeChanged();
+
+		if (this.currentSong.flags.isScrobbled) {
+			this.scheduleHiveIdleFinalize();
+		}
+
 		await sendContentMessage({
 			type: 'setPaused',
 			payload: {
@@ -1254,6 +1238,7 @@ export default class Controller {
 
 	private async setResumedPlaying(): Promise<void> {
 		this.isPaused = false;
+		this.clearHiveIdleFinalize();
 
 		if (
 			!assertSongNotNull(this.currentSong) ||
@@ -1270,6 +1255,42 @@ export default class Controller {
 				song: this.currentSong.getCloneableData(),
 			},
 		});
+	}
+
+	private scheduleHiveIdleFinalize(): void {
+		this.clearHiveIdleFinalize();
+		this.hiveIdleTimer = setTimeout(() => {
+			this.hiveIdleTimer = null;
+			this.fireHiveIdleFinalize();
+		}, Controller.HIVE_IDLE_FINALIZE_MS);
+	}
+
+	private clearHiveIdleFinalize(): void {
+		if (this.hiveIdleTimer) {
+			clearTimeout(this.hiveIdleTimer);
+			this.hiveIdleTimer = null;
+		}
+	}
+
+	private fireHiveIdleFinalize(): void {
+		if (!this.currentSong?.flags.isScrobbled) {
+			return;
+		}
+		const elapsed = this.playbackTimer.getElapsed();
+		const totalPlaySeconds = this.accumulatedPlaySeconds + elapsed;
+		if (totalPlaySeconds <= 0) {
+			return;
+		}
+		const songToFinalize =
+			this.pendingFinalizeSong ?? this.currentSong.getCloneableData();
+		void sendContentMessage({
+			type: 'hiveFinalize',
+			payload: { playSeconds: totalPlaySeconds, song: songToFinalize },
+		});
+		// Zero out so a later resetState doesn't recompute and re-send stale totals.
+		// hive-scrobbler dedups by startTimestamp anyway, but this keeps the math clean.
+		this.accumulatedPlaySeconds = 0;
+		this.pendingFinalizeSong = null;
 	}
 
 	/**

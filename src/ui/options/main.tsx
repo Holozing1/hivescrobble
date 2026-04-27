@@ -5,22 +5,17 @@ import '@/theme/themes.scss';
 import { Show, createSignal, onCleanup } from 'solid-js';
 import { CloseOutlined } from '@/ui/components/icons';
 import Sidebar from './sidebar/sidebar';
-import { EditsModal } from './components/edit-options/edited-tracks';
 import Permissions from './components/permissions';
-import { RegexEditsModal } from './components/edit-options/regex-edits';
 import type {
 	ModalType,
 	NavigatorNavigationButton,
 } from './components/navigator';
 import {
-	aboutItem,
 	accountItem,
 	connectorOverrideOptionsItem,
 	settings,
 } from './components/navigator';
 import ContextMenu from '../components/context-menu/context-menu';
-import { CacheEditModal } from './components/scrobble-cache';
-import { BlockedTagsModal } from './components/edit-options/blocked-tags';
 import { BlocklistModal } from './components/edit-options/blocked-channels';
 
 /**
@@ -48,11 +43,7 @@ function getDefaultSetting(): NavigatorNavigationButton {
 const defaultSetting = getDefaultSetting();
 
 const modals = {
-	savedEdits: EditsModal,
-	regexEdits: RegexEditsModal,
 	blocklist: BlocklistModal,
-	cacheEdit: CacheEditModal,
-	blockedTags: BlockedTagsModal,
 	'': () => <div>Loading...</div>,
 };
 
@@ -86,6 +77,7 @@ function Options() {
 		createSignal(contextMenuQuery());
 	const resizeListener = () => setShouldShowContextMenu(contextMenuQuery());
 	window.addEventListener('resize', resizeListener);
+	onCleanup(() => window.removeEventListener('resize', resizeListener));
 
 	return (
 		<>

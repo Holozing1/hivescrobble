@@ -15,9 +15,23 @@ export interface ParsedSongData extends ProcessedSongData {
 	uniqueID?: string | null;
 	originUrl?: string | null;
 	isPodcast?: boolean | null;
+	isVideo?: boolean | null;
 	isPlaying?: boolean | null;
 	currentTime?: number | null;
 	scrobblingDisallowedReason?: DisallowedReason | null;
+
+	// Video-side fields for long-form scrobbles (movie/TV episode).
+	// Populated by connectors targeting streaming services; enriched by
+	// the metadata pipeline stage (Wikipedia + Wikidata) before broadcast.
+	videoKind?: 'movie' | 'episode' | null;
+	wikipediaUrl?: string | null;
+	seriesWikipediaUrl?: string | null;
+	imdbId?: string | null;
+	seriesImdbId?: string | null;
+	year?: number | null;
+	season?: number | null;
+	episode?: number | null;
+	seriesTitle?: string | null;
 }
 
 export type Flags =

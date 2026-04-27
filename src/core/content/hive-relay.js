@@ -9,6 +9,13 @@
 (function () {
 	'use strict';
 
+	// Guard against duplicate installs: injectRelay() runs on every broadcast,
+	// and every run would otherwise add another `message` listener. With N
+	// listeners, a single hiveBroadcast triggers N requestCustomJson calls →
+	// N duplicate transactions on-chain.
+	if (window.__hobbles_relay_installed) return;
+	window.__hobbles_relay_installed = true;
+
 	window.addEventListener('message', function (event) {
 		if (event.source !== window) return;
 		var d = event.data;

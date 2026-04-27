@@ -186,6 +186,14 @@ Connector.getOriginUrl = () => {
 	return `https://youtu.be/${videoId}`;
 };
 
+// Non-music YouTube video — anything the category fetch says isn't Music.
+// Returns false until the async category fetch resolves; the controller
+// re-reads state on later ticks, so it'll flip once the cache fills.
+Connector.isVideo = () => {
+	const category = getVideoCategory();
+	return category != null && category !== categoryPending && category !== categoryMusic;
+};
+
 Connector.getTrackArt = () => {
 	const videoId = getVideoId();
 	return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;

@@ -4,17 +4,14 @@ import {
 	HelpOutlined,
 	ContactsOutlined,
 	SettingsOutlined,
-	EditOutlined,
 	ExtensionOutlined,
 	ManageAccountsOutlined,
-	TuneOutlined,
 	ToggleOnOutlined,
 	ToggleOffOutlined,
 	TimerOutlined,
 	FavoriteOutlined,
 	PersonOutlined,
 	PersonOffOutlined,
-	QueueMusicOutlined,
 } from '@/ui/components/icons';
 
 import InfoComponent from '@/ui/options/components/info';
@@ -24,7 +21,6 @@ import ContactComponent from '@/ui/options/components/contact';
 import OptionsComponent from '@/ui/options/components/options/options';
 import Accounts from '@/ui/options/components/accounts';
 import ConnectorOverrideOptions from '@/ui/options/components/connector-override';
-import EditOptions from '@/ui/options/components/edit-options/edit-options';
 import browser from 'webextension-polyfill';
 import {
 	addToBlocklist,
@@ -37,19 +33,11 @@ import {
 	removeFromBlocklist,
 } from '@/core/background/util';
 import * as ControllerMode from '@/core/object/controller/controller-mode';
-import ScrobbleCache from './scrobble-cache';
-import AdvancedOptionsComponent from './advanced-settings';
 
 /**
  * Type indicating possible states for modal
  */
-export type ModalType =
-	| 'savedEdits'
-	| 'regexEdits'
-	| 'cacheEdit'
-	| 'blockedTags'
-	| 'blocklist'
-	| '';
+export type ModalType = 'blocklist' | '';
 
 /**
  * Mutual base button
@@ -103,40 +91,16 @@ export const optionsItem: NavigatorNavigationButton = {
 	element: OptionsComponent,
 };
 
-export const scrobbleCache: NavigatorNavigationButton = {
-	namei18n: 'optionsScrobbleCache',
-	icon: QueueMusicOutlined,
-	element: ScrobbleCache,
-};
-
-export const editOptionsItem: NavigatorNavigationButton = {
-	namei18n: 'optionsEdits',
-	icon: EditOutlined,
-	element: EditOptions,
-};
-
 export const connectorOverrideOptionsItem: NavigatorNavigationButton = {
 	namei18n: 'optionsConnectors',
 	icon: ExtensionOutlined,
 	element: ConnectorOverrideOptions,
 };
 
-export const advancedOptionsItem: NavigatorNavigationButton = {
-	namei18n: 'optionsAdvanced',
-	icon: TuneOutlined,
-	element: AdvancedOptionsComponent,
-};
-
 export const optionsGroup: NavigatorButtonGroup = {
 	namei18n: 'optionsOptions',
 	icon: SettingsOutlined,
-	group: [
-		optionsItem,
-		scrobbleCache,
-		editOptionsItem,
-		connectorOverrideOptionsItem,
-		advancedOptionsItem,
-	],
+	group: [optionsItem, connectorOverrideOptionsItem],
 };
 
 export const contactItem: NavigatorNavigationButton = {
