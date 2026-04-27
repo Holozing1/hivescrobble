@@ -57,6 +57,9 @@ const categoryCache = new Map<string, string>();
  * Wether we should only scrobble music recognised by YouTube Music
  */
 let scrobbleMusicRecognisedOnly = false;
+// When YT Music doesn't recognise a video as music, treat it as a video
+// scrobble (kind=video) instead of blocking. Off → legacy block-only.
+let scrobbleNonMusicVideos = true;
 
 /**
  * Wether the Youtube Music track info getter is enabled
@@ -233,8 +236,18 @@ Connector.scrobblingDisallowedReason = () => {
 		}
 
 		if (!ytMusicCache.recognisedByYtMusic) {
-			// not recognised!
-			return 'NotOnYouTubeMusic';
+			// Not recognised as music by YT Music. If this video also lives in
+			// a non-music category (Entertainment, Comedy, News, etc.) and
+			// scrobbleNonMusicVideos is on, fall through — Connector.isVideo()
+			// returns true for non-music categories, so the hive scrobbler
+			// will tag it as kind=video and it'll land in the videos history
+			// instead of polluting the music feed.
+			const category = getVideoCategory();
+			const isNonMusicCategory =
+				category != null && category !== categoryPending && category !== categoryMusic;
+			if (!(scrobbleNonMusicVideos && isNonMusicCategory)) {
+				return 'NotOnYouTubeMusic';
+			}
 		}
 	}
 
@@ -389,6 +402,18 @@ async function readConnectorOptions() {
 		scrobbleMusicRecognisedOnly = true;
 		Util.debugLog('Only scrobbling when recognised by YouTube Music');
 	}
+
+	// User can disable the non-music → kind=video routing. Defaults to true
+	// (option lives in DEFAULT_CONNECTOR_OPTIONS); reading the actual stored
+	// value here lets opt-outs take effect.
+	scrobbleNonMusicVideos = Boolean(
+		await Util.getOption('YouTube', 'scrobbleNonMusicVideos'),
+	);
+	Util.debugLog(
+		scrobbleNonMusicVideos
+			? 'Non-music YouTube videos will be scrobbled as kind=video'
+			: 'Non-music YouTube videos will be ignored',
+	);
 
 	if (await Util.getOption('YouTube', 'enableGetTrackInfoFromYtMusic')) {
 		getTrackInfoFromYtMusicEnabled = true;

@@ -38,8 +38,16 @@ export default function ConnectorOptionsList() {
 					connector="YouTube"
 					key="scrobbleEntertainmentOnly"
 				/>
+				<ConnectorOptionEntry
+					options={options}
+					setOptions={setOptions}
+					connectorOptions={connectorOptions}
+					i18ntitle="optionYtNonMusicVideosTitle"
+					i18nlabel="optionYtNonMusicVideos"
+					connector="YouTube"
+					key="scrobbleNonMusicVideos"
+				/>
 				<li class={styles.muted}>{t('optionYtDesc')}</li>
-				<li class={styles.muted}>YouTube Music recognition and track info are always enabled.</li>
 			</ul>
 		</>
 	);

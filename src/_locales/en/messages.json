@@ -159,6 +159,14 @@
         "message": "Ignore videos that are not in Entertainment category",
         "description": "Option title"
     },
+    "optionYtNonMusicVideos": {
+        "message": "Scrobble non-music videos as videos",
+        "description": "Option label"
+    },
+    "optionYtNonMusicVideosTitle": {
+        "message": "When YouTube Music doesn't recognise a video as music, log it to your videos history instead of skipping it. Turn off to keep your history music-only.",
+        "description": "Option title"
+    },
     "optionYtGetTrackInfoFromYtMusic": {
         "message": "Use Youtube Music to get track info",
         "description": "Option label"

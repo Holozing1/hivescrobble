@@ -139,6 +139,11 @@ export interface ConnectorOptions {
 		scrobbleEntertainmentOnly: boolean;
 		scrobbleMusicRecognisedOnly: boolean;
 		enableGetTrackInfoFromYtMusic: boolean;
+		/** When YT Music doesn't recognise a video as music, scrobble it as
+		 *  kind=video (lands in the videos history) instead of blocking. Off
+		 *  reverts to the legacy "block unrecognised" behaviour for users who
+		 *  only want a music-only history. */
+		scrobbleNonMusicVideos: boolean;
 	};
 }
 
@@ -151,6 +156,7 @@ const DEFAULT_CONNECTOR_OPTIONS: ConnectorOptions = {
 		scrobbleEntertainmentOnly: false,
 		scrobbleMusicRecognisedOnly: true,  // always on — only scrobble what YT Music recognises
 		enableGetTrackInfoFromYtMusic: true, // always on — use YT Music for better track info
+		scrobbleNonMusicVideos: true,        // route non-music YT videos to kind=video by default
 	},
 };
 
