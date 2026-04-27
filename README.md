@@ -3,13 +3,13 @@
 <p>
 	<img width="128" src="./src/icons/main/universal.svg"/>
 </p>
-<h1>Hobbles</h1>
+<h1>Hive Scrobbler</h1>
 
 [![Test status][GitHubActionsBadge]][GitHubActions]
 
 </div>
 
-Hobbles is a browser extension that scrobbles your music listening history to the **Hive blockchain** via [Hive Keychain][HiveKeychain]. It is a fork of [Web Scrobbler][WebScrobbler] (MIT).
+Hive Scrobbler is a browser extension that scrobbles your music listening history to the **Hive blockchain** via [Hive Keychain][HiveKeychain]. It is a fork of [Web Scrobbler][WebScrobbler] (MIT).
 
 Every song you listen to is recorded as a `custom_json` operation on Hive — feeless, permanent, and owned by you.
 
@@ -38,14 +38,14 @@ Every song you listen to is recorded as a `custom_json` operation on Hive — fe
 
 ## Setup
 
-1. Install Hobbles (see below)
+1. Install Hive Scrobbler (see below)
 2. Open the extension settings and go to **Accounts**
 3. Click **Connect with Keychain**, enter your Hive username, and approve the login popup
 4. Done — your scrobbles will post to Hive automatically as you listen
 
 ## Installation
 
-Hobbles is not yet on extension stores. Install it from source:
+Hive Scrobbler is not yet on extension stores. Install it from source:
 
 ### Chrome / Edge / Brave
 
