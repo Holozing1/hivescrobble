@@ -11,6 +11,12 @@ import {
 } from '@/util/communication';
 import savedEdits from '../storage/saved-edits';
 import regexEdits from '../storage/regex-edits';
+import { setupZingitAuthSync } from '@/core/content/zingit-auth-sync';
+
+// Bridge Hobbles' Hive session to Zingit Web on allowlisted hosts so a
+// successful Keychain login on either surface propagates to the other.
+// Self-gates by hostname; no-op everywhere else.
+setupZingitAuthSync();
 
 /**
  * Relay hiveConnect requests from the background to the MAIN world (hive-relay.js)
