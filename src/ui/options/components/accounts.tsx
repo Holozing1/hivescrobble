@@ -56,33 +56,74 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 						class={styles.button}
 						onClick={() =>
 							void (async () => {
-								// Keychain only injects into http/https pages, not extension pages.
-								// Find a suitable tab to relay the Keychain popup through.
-								let tabs = await browser.tabs.query({
+								// Keychain only injects into http/https pages, not extension
+								// pages. Build a candidate list — active tab first, then any
+								// other http/https tab — so a tab in an error state (Chrome
+								// raises "Frame with ID 0 is showing error page" when
+								// executeScript hits a failed-to-load tab) falls through to
+								// the next candidate instead of failing the whole flow.
+								const activeTabs = await browser.tabs.query({
 									active: true,
 									url: ['http://*/*', 'https://*/*'],
 								});
-								if (tabs.length === 0) {
-									tabs = await browser.tabs.query({
-										url: ['http://*/*', 'https://*/*'],
+								const otherTabs = await browser.tabs.query({
+									url: ['http://*/*', 'https://*/*'],
+								});
+								const candidates = [
+									...activeTabs,
+									...otherTabs.filter(
+										(t) => !activeTabs.some((a) => a.id === t.id),
+									),
+								];
+
+								// No usable tab — open scrobble.life and use that. Wait
+								// briefly for it to start loading before attempting injection.
+								if (candidates.length === 0) {
+									const created = await browser.tabs.create({
+										url: 'https://scrobble.life',
+										active: true,
 									});
+									if (created.id) {
+										await new Promise((r) => setTimeout(r, 1500));
+										candidates.push(created);
+									}
 								}
-								const tabId = tabs[0]?.id;
-								if (!tabId) {
-									alert(
-										'Please open a web page in a tab first, then try connecting.',
-									);
-									return;
+
+								let lastErr: unknown = null;
+								for (const tab of candidates) {
+									if (!tab.id) continue;
+									try {
+										await (scrobbler() as HiveScrobbler).connect(tab.id);
+										setSession.refetch();
+										setProfileUrl.refetch();
+										return;
+									} catch (err) {
+										lastErr = err;
+										const msg =
+											err instanceof Error ? err.message : String(err);
+										// Injection failures (error page, restricted URL, frame
+										// gone) — try the next candidate. Anything else (Keychain
+										// rejected, user closed popup, network) is real, surface
+										// it and stop.
+										if (
+											msg.includes('error page') ||
+											msg.includes('Cannot access') ||
+											msg.includes('Frame with ID') ||
+											msg.includes('No tab with id')
+										) {
+											continue;
+										}
+										alert(`Connection failed: ${msg}`);
+										return;
+									}
 								}
-								try {
-									await (scrobbler() as HiveScrobbler).connect(tabId);
-									setSession.refetch();
-									setProfileUrl.refetch();
-								} catch (err) {
-									alert(
-										`Connection failed: ${err instanceof Error ? err.message : String(err)}`,
-									);
-								}
+								alert(
+									`Connection failed — every open tab refused script injection. Open https://scrobble.life or any music site in a fresh tab and try again.${
+										lastErr instanceof Error
+											? `\n\n(${lastErr.message})`
+											: ''
+									}`,
+								);
 							})()
 						}
 					>
