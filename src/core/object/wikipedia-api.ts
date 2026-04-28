@@ -20,7 +20,7 @@ const API = 'https://en.wikipedia.org/w/api.php';
 const REST = 'https://en.wikipedia.org/api/rest_v1';
 const WIKIDATA_API = 'https://www.wikidata.org/w/api.php';
 
-const UA = 'hobbles-extension/1.0 (https://github.com/holozinggame/hobbles)';
+const UA = 'hive-scrobbler/1.0 (https://scrobble.life)';
 
 export interface WikipediaCandidate {
 	title: string;

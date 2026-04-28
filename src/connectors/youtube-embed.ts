@@ -25,7 +25,7 @@ let injected: {
 } | null = null;
 
 window.addEventListener('message', (event: MessageEvent) => {
-	if (event.data?.__hobbles && event.data.type === 'zingitTrack') {
+	if (event.data?.__hive_scrobbler && event.data.type === 'zingitTrack') {
 		injected = {
 			videoId: event.data.videoId || null,
 			artist: event.data.artist || null,

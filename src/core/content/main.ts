@@ -13,7 +13,7 @@ import savedEdits from '../storage/saved-edits';
 import regexEdits from '../storage/regex-edits';
 import { setupZingitAuthSync } from '@/core/content/zingit-auth-sync';
 
-// Bridge Hobbles' Hive session to Zingit Web on allowlisted hosts so a
+// Bridge this extension's Hive session to scrobble.life on allowlisted hosts so a
 // successful Keychain login on either surface propagates to the other.
 // Self-gates by hostname; no-op everywhere else.
 setupZingitAuthSync();
@@ -32,7 +32,7 @@ setupContentListeners(
 				function onMessage(event: MessageEvent) {
 					if (
 						event.source !== window ||
-						!event.data?.__hobbles ||
+						!event.data?.__hive_scrobbler ||
 						event.data.type !== 'hiveConnectResult' ||
 						event.data.id !== id
 					) {
@@ -47,7 +47,7 @@ setupContentListeners(
 				}
 				window.addEventListener('message', onMessage);
 				window.postMessage(
-					{ __hobbles: true, type: 'hiveConnect', id },
+					{ __hive_scrobbler: true, type: 'hiveConnect', id },
 					'*',
 				);
 			});
@@ -61,7 +61,7 @@ setupContentListeners(
 				function onMessage(event: MessageEvent) {
 					if (
 						event.source !== window ||
-						!event.data?.__hobbles ||
+						!event.data?.__hive_scrobbler ||
 						event.data.type !== 'hiveBroadcastResult' ||
 						event.data.id !== id
 					) {
@@ -72,7 +72,7 @@ setupContentListeners(
 				}
 				window.addEventListener('message', onMessage);
 				window.postMessage(
-					{ __hobbles: true, type: 'hiveBroadcast', id, payload },
+					{ __hive_scrobbler: true, type: 'hiveBroadcast', id, payload },
 					'*',
 				);
 			});

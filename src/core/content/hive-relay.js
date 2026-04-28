@@ -1,10 +1,10 @@
 /**
- * Hobbles Hive relay — injected on-demand into the MAIN world of the active music tab.
+ * Hive Scrobbler relay — injected on-demand into the MAIN world of the active music tab.
  * Calls window.hive_keychain and relays results back to the ISOLATED content script
  * via window.postMessage.
  *
- * Messages in:  { __hobbles: true, type, id, payload? }
- * Messages out: { __hobbles: true, type: '<type>Result', id, ... }
+ * Messages in:  { __hive_scrobbler: true, type, id, payload? }
+ * Messages out: { __hive_scrobbler: true, type: '<type>Result', id, ... }
  */
 (function () {
 	'use strict';
@@ -13,13 +13,13 @@
 	// and every run would otherwise add another `message` listener. With N
 	// listeners, a single hiveBroadcast triggers N requestCustomJson calls →
 	// N duplicate transactions on-chain.
-	if (window.__hobbles_relay_installed) return;
-	window.__hobbles_relay_installed = true;
+	if (window.__hive_scrobbler_relay_installed) return;
+	window.__hive_scrobbler_relay_installed = true;
 
 	window.addEventListener('message', function (event) {
 		if (event.source !== window) return;
 		var d = event.data;
-		if (!d || !d.__hobbles) return;
+		if (!d || !d.__hive_scrobbler) return;
 
 		var kc = window.hive_keychain;
 
@@ -28,7 +28,7 @@
 			if (!kc) {
 				window.postMessage(
 					{
-						__hobbles: true,
+						__hive_scrobbler: true,
 						type: 'hiveConnectResult',
 						id: id,
 						error: 'Hive Keychain extension not detected. Please install it.',
@@ -39,7 +39,7 @@
 			}
 			kc.requestSignBuffer(
 				null,
-				'Connect to Hobbles',
+				'Connect to Hive Scrobbler',
 				'Posting',
 				function (response) {
 					if (
@@ -49,7 +49,7 @@
 					) {
 						window.postMessage(
 							{
-								__hobbles: true,
+								__hive_scrobbler: true,
 								type: 'hiveConnectResult',
 								id: id,
 								username: response.data.username,
@@ -59,7 +59,7 @@
 					} else {
 						window.postMessage(
 							{
-								__hobbles: true,
+								__hive_scrobbler: true,
 								type: 'hiveConnectResult',
 								id: id,
 								error: response.message || 'Keychain authentication failed',
@@ -77,7 +77,7 @@
 			if (!kc) {
 				window.postMessage(
 					{
-						__hobbles: true,
+						__hive_scrobbler: true,
 						type: 'hiveBroadcastResult',
 						id: reqId,
 						success: false,
@@ -95,7 +95,7 @@
 				function (response) {
 					window.postMessage(
 						{
-							__hobbles: true,
+							__hive_scrobbler: true,
 							type: 'hiveBroadcastResult',
 							id: reqId,
 							success: !!(response && response.success),

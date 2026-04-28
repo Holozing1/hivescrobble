@@ -279,7 +279,7 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 						const d = event.data as Record<string, unknown>;
 						if (
 							event.source !== window ||
-							!d?.__hobbles ||
+							!d?.__hive_scrobbler ||
 							d.type !== 'hiveConnectResult' ||
 							d.id !== id
 						) {
@@ -294,7 +294,7 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 					};
 					window.addEventListener('message', onMessage);
 					window.postMessage(
-						{ __hobbles: true, type: 'hiveConnect', id },
+						{ __hive_scrobbler: true, type: 'hiveConnect', id },
 						'*',
 					);
 				}),

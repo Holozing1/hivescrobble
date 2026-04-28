@@ -1,15 +1,17 @@
 /**
- * Cross-app auth sync between Hobbles (this extension) and Zingit Web.
+ * Cross-app auth sync between Hive Scrobbler (this extension) and the
+ * scrobble.life website.
  *
  * Both surfaces verify identity via Hive Keychain independently, but they
  * each persist the verified username separately (extension storage vs. web
  * cookie+localStorage), so logging in on one side leaves the other showing
  * a Connect button. This module bridges them on pages where Zingit lives:
  *
- *   - On script load: read Hobbles' current session and announce it to the
- *     page so Zingit's HiveAuthProvider can adopt it without re-prompting.
- *   - On Hobbles storage changes (e.g. user connects via the extension's
- *     options page): re-announce so an open Zingit tab updates live.
+ *   - On script load: read this extension's current session and announce
+ *     it to the page so the website's HiveAuthProvider can adopt it
+ *     without re-prompting.
+ *   - On extension storage changes (e.g. user connects via the options
+ *     page): re-announce so an open scrobble.life tab updates live.
  *   - On Zingit announcements (after the user connects on the website): if
  *     the username differs from ours, write it into extension storage so
  *     subsequent scrobbles use the same account.
@@ -38,7 +40,7 @@ const ALLOWED_HOSTS = new Set([
 
 interface AuthSyncMessage {
 	__auth_sync: true;
-	source: 'hobbles' | 'zingit';
+	source: 'extension' | 'website';
 	username: string | null;
 }
 
@@ -74,7 +76,7 @@ async function setStoredUsername(username: string): Promise<void> {
 function announce(username: string | null): void {
 	const msg: AuthSyncMessage = {
 		__auth_sync: true,
-		source: 'hobbles',
+		source: 'extension',
 		username,
 	};
 	try {
@@ -91,7 +93,7 @@ export function setupZingitAuthSync(): void {
 	// extension was already connected.
 	void getStoredUsername().then(announce);
 
-	// Re-announce when Hobbles' session changes (e.g. user connected from
+	// Re-announce when our session changes (e.g. user connected from
 	// the extension's options page in another tab).
 	browser.storage.onChanged.addListener((changes, area) => {
 		if (area !== 'local' || !('Hive' in changes)) return;
@@ -104,7 +106,7 @@ export function setupZingitAuthSync(): void {
 		if (event.source !== window) return;
 		if (event.origin !== window.location.origin) return;
 		const d = event.data as Partial<AuthSyncMessage> | undefined;
-		if (!d || d.__auth_sync !== true || d.source !== 'zingit') return;
+		if (!d || d.__auth_sync !== true || d.source !== 'website') return;
 		// Login propagation only — see module header for rationale.
 		if (typeof d.username !== 'string' || !d.username) return;
 		void getStoredUsername().then((current) => {

@@ -13,7 +13,7 @@ import { timeoutPromise } from '@/util/util';
  *
  * Replaces the prior TMDB pipeline (deleted 2026-04-26 along with
  * core/object/tmdb-api.ts) — Wikipedia is free for any use, TMDB charges
- * for commercial which would have blocked Hobbles' public launch.
+ * for commercial which would have blocked Hive Scrobbler's public launch.
  *
  * Inputs (set by the connector on song.parsed):
  *   videoKind: 'movie' | 'episode'
