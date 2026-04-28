@@ -189,10 +189,113 @@ Connector.getOriginUrl = () => {
 	return `https://youtu.be/${videoId}`;
 };
 
-// Non-music YouTube video — anything the category fetch says isn't Music.
-// Returns false until the async category fetch resolves; the controller
-// re-reads state on later ticks, so it'll flip once the cache fills.
+// Title/channel-based override that flips isVideo()=true when a video looks
+// like non-music content even if YouTube's `category` metadata says Music
+// or is unreachable. Category is set by the uploader and isn't reliable —
+// a movie studio uploads a trailer to a music-categorised channel, a
+// gaming channel mislabels itself, the category fetch times out, etc.
+//
+// Two tiers of detection:
+//
+//   * Strong title patterns ("Official Trailer", "Tier List", "Let's Play")
+//     fire alone — these almost never appear in real song titles, so the
+//     false-positive risk is acceptable.
+//   * Weak title keywords ("trailer", "teaser", "review", "podcast") fire
+//     only when paired with a non-music channel signal — covers cases
+//     where the title alone is ambiguous ("Teaser" by Twice is a song;
+//     "Teaser" uploaded by Marvel Entertainment is not).
+//
+// When extending: prefer adding strong patterns over weak ones. A song
+// being misclassified as video is annoying but recoverable; the reverse
+// is the bug we're fixing here. Keep this in sync with the streamer-side
+// regex in zingit-web/lib/hive-scrobbles.ts (LOOKS_LIKE_VIDEO_RE) so the
+// ISRC auto-correction respects the same classifications.
+const STRONG_NON_MUSIC_TITLE_PATTERNS: RegExp[] = [
+	// Movie / TV trailers
+	/\bofficial\s+trailer\b/i,
+	/\bteaser\s+trailer\b/i,
+	/\bfinal\s+trailer\b/i,
+	/\b(red|green)\s+band\s+trailer\b/i,
+	/\bfirst\s+look\s+trailer\b/i,
+	/\bnew\s+trailer\b/i,
+	/\bmovie\s+trailer\b/i,
+	/\bextended\s+trailer\b/i,
+	/\btv\s+spot\b/i,
+	// Reactions, reviews, rankings
+	/\breact(ing|s|ion)\s+to\b/i,
+	/\btier\s+list\b/i,
+	/\btop\s+\d+\s+(best|worst|greatest)\b/i,
+	// Gaming
+	/\blet'?s\s+play\b/i,
+	/\bplaythrough\b/i,
+	/\bwalkthrough\b/i,
+	/\bspeedrun\b/i,
+	/\bworld\s+record\b/i,
+	/\bgameplay\s+(trailer|walkthrough|preview)\b/i,
+	// Podcasts / interviews
+	/\b(podcast|episode|ep)\.?\s*#?\s*\d+\b/i,
+	/\bfull\s+(podcast|episode|interview)\b/i,
+	/\bjoe\s+rogan\s+experience\b/i,
+	// Tutorials / explanations
+	/\bhow\s+to\s+\w+/i,
+	/\b(tutorial|deep\s+dive|breakdown|explained)\b/i,
+	// Vlogs / lifestyle
+	/\bday\s+in\s+the\s+life\b/i,
+	/\bvlogmas\b/i,
+	// Live / streaming
+	/\b(live\s+stream|livestream|streaming\s+now)\b/i,
+	// Documentaries / behind-the-scenes
+	/\b(behind\s+the\s+scenes|making\s+of)\b/i,
+	/\bfull\s+documentary\b/i,
+	// Tech / unboxings
+	/\b(unboxing|hands-on\s+review)\b/i,
+];
+
+const NON_MUSIC_CHANNEL_PATTERNS: RegExp[] = [
+	// Movie studios + aggregators
+	/movieclips/i, /marvel\s*(entertainment|studios)?/i, /warner\s+bros/i,
+	/sony\s+pictures/i, /universal\s+pictures/i, /20th\s+century/i,
+	/paramount\s+pictures/i, /lionsgate/i, /disney(\s|$)/i, /pixar/i,
+	/apple\s+tv/i, /amazon\s+mgm/i, /rotten\s+tomatoes/i, /ign\s+movies/i,
+	/fandango/i, /kinocheck/i, /netflix/i, /\bhbo\b/i, /hulu/i, /\ba24\b/i,
+	// Common non-music patterns in channel names
+	/\bgaming\b/i, /\bplays\b/i, /\bgameplay\b/i,
+	/\bpodcast\b/i, /\bnews\b/i, /\btech\b/i, /\breviews?\b/i,
+];
+
+const WEAK_NON_MUSIC_TITLE_KEYWORDS = /\b(trailer|teaser|review|reviewing|interview|podcast|vlog|reaction|gameplay|highlights?|montage)\b/i;
+
+function looksLikeNonMusicVideo(
+	title:   string | null | undefined,
+	channel: string | null | undefined,
+): boolean {
+	if (!title) return false;
+	if (STRONG_NON_MUSIC_TITLE_PATTERNS.some(re => re.test(title))) return true;
+	if (channel && NON_MUSIC_CHANNEL_PATTERNS.some(re => re.test(channel))) {
+		return WEAK_NON_MUSIC_TITLE_KEYWORDS.test(title);
+	}
+	return false;
+}
+
+function getCurrentVideoTitle(): string | null {
+	const el = (Util.queryElements(videoTitleSelector) as NodeListOf<HTMLElement>)?.[0];
+	return el?.textContent?.trim() || null;
+}
+
+function getCurrentChannelName(): string | null {
+	const el = (Util.queryElements(channelNameSelector) as NodeListOf<HTMLElement>)?.[0];
+	return el?.textContent?.trim() || null;
+}
+
+// Non-music YouTube video — anything the category fetch says isn't Music,
+// OR a video whose title/channel match a non-music pattern (regardless of
+// category). Returns false until the async category fetch resolves; the
+// controller re-reads state on later ticks, so it'll flip once the cache
+// fills.
 Connector.isVideo = () => {
+	if (looksLikeNonMusicVideo(getCurrentVideoTitle(), getCurrentChannelName())) {
+		return true;
+	}
 	const category = getVideoCategory();
 	return category != null && category !== categoryPending && category !== categoryMusic;
 };
