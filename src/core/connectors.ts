@@ -61,7 +61,14 @@ export default <ConnectorMeta[]>[
 	},
 	{
 		label: 'YouTube Embed',
-		matches: ['*://*.youtube.com/embed/*'],
+		matches: [
+			'*://*.youtube.com/embed/*',
+			// scrobble.life and other privacy-conscious embedders use the
+			// nocookie variant — same backend, same iframe contract, just a
+			// different host. Without this match the connector never injects
+			// into the iframe and nothing scrobbles from those pages.
+			'*://*.youtube-nocookie.com/embed/*',
+		],
 		js: 'youtube-embed.js',
 		id: 'youtube-embed',
 		allFrames: true,
