@@ -225,13 +225,37 @@ const STRONG_NON_MUSIC_TITLE_PATTERNS: RegExp[] = [
 	/\breact(ing|s|ion)\s+to\b/i,
 	/\btier\s+list\b/i,
 	/\btop\s+\d+\s+(best|worst|greatest)\b/i,
-	// Gaming
+	// Gaming — generic verbs
 	/\blet'?s\s+play\b/i,
 	/\bplaythrough\b/i,
 	/\bwalkthrough\b/i,
 	/\bspeedrun\b/i,
 	/\bworld\s+record\b/i,
 	/\bgameplay\s+(trailer|walkthrough|preview)\b/i,
+	// Gaming — common game titles. Anything containing these strongly
+	// implies gaming content even on a channel with miscategorised
+	// metadata (e.g. shroud's Counter-Strike highlights uploaded under
+	// a non-Gaming YouTube category).
+	/\bcounter[- ]?strike\b/i,
+	/\b(cs:?go|cs2)\b/i,
+	/\bvalorant\b/i,
+	/\bfortnite\b/i,
+	/\bminecraft\b/i,
+	/\bleague\s+of\s+legends\b/i,
+	/\b(apex\s+legends|apex\s+gameplay)\b/i,
+	/\bdota\s*2?\b/i,
+	/\bcall\s+of\s+duty\b/i,
+	/\b(cod\s+(warzone|mw\d+|black\s+ops))\b/i,
+	/\boverwatch\s*2?\b/i,
+	/\b(gta\s*[v\d]|grand\s+theft\s+auto)\b/i,
+	/\bcyberpunk\s*2077\b/i,
+	/\b(world\s+of\s+warcraft|wow\s+(raid|dungeon|pvp))\b/i,
+	/\brocket\s+league\b/i,
+	/\belden\s+ring\b/i,
+	/\bzelda\b/i,
+	/\bpokemon\b/i,
+	/\bmario\s+(kart|party|odyssey)\b/i,
+	/\bsmash\s+(bros|ultimate)\b/i,
 	// Podcasts / interviews
 	/\b(podcast|episode|ep)\.?\s*#?\s*\d+\b/i,
 	/\bfull\s+(podcast|episode|interview)\b/i,
@@ -250,6 +274,43 @@ const STRONG_NON_MUSIC_TITLE_PATTERNS: RegExp[] = [
 	// Tech / unboxings
 	/\b(unboxing|hands-on\s+review)\b/i,
 ];
+
+// Songs are almost always 2-7 minutes; anything dramatically longer that
+// doesn't have an explicit music signal (Topic / VEVO channel, "Official
+// Music Video" in title) is overwhelmingly likely to be non-music
+// long-form content (gaming streams, podcasts, vlogs, full documentaries).
+// Threshold deliberately conservative — extended remixes and DJ-set tracks
+// can occasionally push 10-15 min, but past 15 min the signal is strong.
+const LONG_FORM_THRESHOLD_SEC = 15 * 60
+
+const MUSIC_CHANNEL_HINTS = [
+	/\bvevo\b/i,
+	/\s+-\s+topic$/i,
+	/\brecords?$/i,
+	/\bofficial\s+music$/i,
+]
+
+const MUSIC_TITLE_HINTS = [
+	/\bofficial\s+music\s+video\b/i,
+	/\bofficial\s+(audio|video|lyric\s+video)\b/i,
+	/\b(lyric|lyrics)\s+video\b/i,
+	/\bremix\b/i, // remixes are generally still music
+]
+
+function looksLikeMusicSignal(
+	title:   string | null | undefined,
+	channel: string | null | undefined,
+): boolean {
+	if (channel && MUSIC_CHANNEL_HINTS.some(re => re.test(channel))) return true
+	if (title   && MUSIC_TITLE_HINTS.some(re   => re.test(title)))   return true
+	return false
+}
+
+function getCurrentVideoDurationSec(): number | null {
+	const v = document.querySelector(videoSelector) as HTMLVideoElement | null
+	if (!v || !isFinite(v.duration) || v.duration <= 0) return null
+	return v.duration / (v.playbackRate || 1)
+}
 
 const NON_MUSIC_CHANNEL_PATTERNS: RegExp[] = [
 	// Movie studios + aggregators
@@ -287,17 +348,34 @@ function getCurrentChannelName(): string | null {
 	return el?.textContent?.trim() || null;
 }
 
-// Non-music YouTube video — anything the category fetch says isn't Music,
-// OR a video whose title/channel match a non-music pattern (regardless of
-// category). Returns false until the async category fetch resolves; the
-// controller re-reads state on later ticks, so it'll flip once the cache
-// fills.
+// Non-music YouTube video — three independent paths return true:
+//   1. title/channel matches a non-music pattern (looksLikeNonMusicVideo)
+//   2. YouTube's category metadata says non-Music
+//   3. duration > 15 min AND no explicit music signal in title/channel —
+//      catches long-form content (gaming streams, podcasts, vlogs) that
+//      slips through the keyword list. The "no music signal" guard
+//      prevents false positives on extended remixes / DJ sets that are
+//      genuinely music.
+//
+// Returns false during the brief window after page load while category
+// fetches; controller re-reads state on later ticks, so it flips once
+// the cache fills.
 Connector.isVideo = () => {
-	if (looksLikeNonMusicVideo(getCurrentVideoTitle(), getCurrentChannelName())) {
+	const title   = getCurrentVideoTitle();
+	const channel = getCurrentChannelName();
+	if (looksLikeNonMusicVideo(title, channel)) return true;
+
+	const category = getVideoCategory();
+	if (category != null && category !== categoryPending && category !== categoryMusic) {
 		return true;
 	}
-	const category = getVideoCategory();
-	return category != null && category !== categoryPending && category !== categoryMusic;
+
+	const durationSec = getCurrentVideoDurationSec();
+	if (durationSec != null && durationSec > LONG_FORM_THRESHOLD_SEC) {
+		if (!looksLikeMusicSignal(title, channel)) return true;
+	}
+
+	return false;
 };
 
 Connector.getTrackArt = () => {
@@ -636,6 +714,14 @@ function getTrackInfoFromYoutubeMusic():
 		});
 }
 
+// Chapter names that are song *sections* rather than separate tracks.
+// On a music video with structural chapters (Verse 1 / Pre-Chorus /
+// Chorus / Bridge / Outro), the chapter getter would otherwise treat
+// each as its own track and scrobble e.g. "Vicetone — Chorus" instead
+// of "Vicetone — Nevada". Falling through to the title-based getter
+// recovers the real track name.
+const SONG_SECTION_NAMES = /^(intro|pre[-\s]?intro|verse(\s*\d+)?|pre[-\s]?chorus|chorus(\s*\d+)?|hook|drop|build([-\s]?up)?|breakdown|bridge|interlude|outro|coda|refrain|ad[-\s]?lib|instrumental|solo)$/i;
+
 function getTrackInfoFromChapters() {
 	// Short circuit if chapters not available - necessary to avoid misscrobbling with SponsorBlock.
 	if (!areChaptersAvailable()) {
@@ -646,6 +732,12 @@ function getTrackInfoFromChapters() {
 	}
 
 	const chapterName = Util.getTextFromSelectors(chapterNameSelector);
+	// Skip chapters that look like song-section labels — fall through to
+	// the title-based getter so the actual track name wins.
+	if (chapterName && SONG_SECTION_NAMES.test(chapterName.trim())) {
+		return { artist: null, track: null };
+	}
+
 	const artistTrack = Util.processYtVideoTitle(chapterName);
 	if (!artistTrack.track) {
 		artistTrack.track = chapterName;
