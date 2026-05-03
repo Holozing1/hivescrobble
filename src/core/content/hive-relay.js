@@ -71,6 +71,57 @@
 			);
 		}
 
+		if (d.type === 'hivePrivacySign') {
+			var psId = d.id;
+			var psUser = d.username;
+			var psChallenge = d.challenge;
+			if (!kc) {
+				window.postMessage(
+					{
+						__hive_scrobbler: true,
+						type: 'hivePrivacySignResult',
+						id: psId,
+						error: 'Hive Keychain extension not detected.',
+					},
+					'*',
+				);
+				return;
+			}
+			// Sign a fixed challenge with the user's posting key. Hive's
+			// RFC 6979 deterministic ECDSA means the same (user, challenge)
+			// always produces the same signature, so we can hash it into a
+			// stable AES-256 secret without storing anything on chain.
+			kc.requestSignBuffer(
+				psUser,
+				psChallenge,
+				'Posting',
+				function (response) {
+					if (response.success && response.result) {
+						window.postMessage(
+							{
+								__hive_scrobbler: true,
+								type: 'hivePrivacySignResult',
+								id: psId,
+								signature: response.result,
+							},
+							'*',
+						);
+					} else {
+						window.postMessage(
+							{
+								__hive_scrobbler: true,
+								type: 'hivePrivacySignResult',
+								id: psId,
+								error: response.message || response.error || 'Keychain rejected signature',
+							},
+							'*',
+						);
+					}
+				},
+			);
+			return;
+		}
+
 		if (d.type === 'hiveBroadcast') {
 			var reqId = d.id;
 			var p = d.payload || {};

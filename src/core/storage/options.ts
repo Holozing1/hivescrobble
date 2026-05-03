@@ -28,6 +28,21 @@ export const ALBUM_GUESSING_DISABLED = 'albumGuessingDisabled';
 export const ALBUM_GUESSING_UNEDITED_ONLY = 'albumGuessingUneditedOnly';
 export const ALBUM_GUESSING_ALL_TRACKS = 'albumGuessingAllTracks';
 
+// ── Tier-B privacy mode (per-kind) ─────────────────────────────────────
+// When true, scrobbles of that kind broadcast an encrypted blob instead of
+// raw artist/title fields. Split per kind so users can keep e.g. their
+// music public but encrypt movies/TV — the latter being more sensitive
+// for many people (politics, religion, mental health docs, etc.).
+//
+// `HIVE_PRIVACY_VIDEOS` is intentionally separate from `HIVE_PRIVACY_MOVIES_TV`:
+//   - VIDEOS covers non-music YouTube auto-scrobbles (vlogs, news, comedy)
+//   - MOVIES_TV covers Netflix, Disney+, Max, Prime Video, manual entries
+// Different sources, different sensitivity profiles.
+export const HIVE_PRIVACY_MUSIC     = 'hivePrivacyMusic';
+export const HIVE_PRIVACY_VIDEOS    = 'hivePrivacyVideos';
+export const HIVE_PRIVACY_MOVIES_TV = 'hivePrivacyMoviesTv';
+export const HIVE_PRIVACY_PODCASTS  = 'hivePrivacyPodcasts';
+
 export interface GlobalOptions {
 	/**
 	 * Force song recognition.
@@ -100,6 +115,29 @@ export interface GlobalOptions {
 	 * Guess albums for all albumless tracks including edited ones
 	 */
 	[ALBUM_GUESSING_ALL_TRACKS]: boolean;
+
+	/**
+	 * Tier-B privacy: when true, music scrobbles broadcast as encrypted
+	 * blobs instead of raw artist/title. Public viewers see "🔒 private
+	 * scrobble"; only the user themselves can decrypt their own history.
+	 */
+	[HIVE_PRIVACY_MUSIC]: boolean;
+
+	/**
+	 * Tier-B privacy for non-music YouTube videos (kind=video).
+	 */
+	[HIVE_PRIVACY_VIDEOS]: boolean;
+
+	/**
+	 * Tier-B privacy for movies + TV episodes (Netflix, Disney+, Max,
+	 * Prime Video, manual entries — kind=movie or kind=episode).
+	 */
+	[HIVE_PRIVACY_MOVIES_TV]: boolean;
+
+	/**
+	 * Tier-B privacy for podcasts.
+	 */
+	[HIVE_PRIVACY_PODCASTS]: boolean;
 }
 
 /**
@@ -120,6 +158,10 @@ const DEFAULT_OPTIONS: GlobalOptions = {
 	[ALBUM_GUESSING_UNEDITED_ONLY]: true,
 	[ALBUM_GUESSING_ALL_TRACKS]: false,
 	[DISABLED_CONNECTORS]: {},
+	[HIVE_PRIVACY_MUSIC]: false,
+	[HIVE_PRIVACY_VIDEOS]: false,
+	[HIVE_PRIVACY_MOVIES_TV]: false,
+	[HIVE_PRIVACY_PODCASTS]: false,
 };
 
 const OVERRIDE_CONTENT = {

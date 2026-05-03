@@ -8,6 +8,16 @@ import type ClonedSong from '@/core/object/cloned-song';
 import BaseScrobbler from '@/core/scrobbler/base-scrobbler';
 import type { HiveScrobblePayload } from '@/core/scrobbler/hive/hive.types';
 import { sendBackgroundMessage } from '@/util/communication';
+import * as PrivacySecret from '@/core/scrobbler/hive/privacy-secret';
+import * as PrivacyCipher from '@/core/scrobbler/hive/privacy-cipher';
+import * as BrowserStorage from '@/core/storage/browser-storage';
+import {
+	HIVE_PRIVACY_MUSIC,
+	HIVE_PRIVACY_VIDEOS,
+	HIVE_PRIVACY_MOVIES_TV,
+	HIVE_PRIVACY_PODCASTS,
+	type GlobalOptions,
+} from '@/core/storage/options';
 
 /** Inject hive-relay.js into the MAIN world of the given tab (on-demand). */
 async function injectRelay(tabId: number): Promise<void> {
@@ -309,6 +319,63 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 		return username;
 	}
 
+	/**
+	 * TEMPORARY DEBUG — derive (or load cached) the privacy secret and run
+	 * an encrypt → decrypt round-trip on a sample payload. Surfaces a
+	 * compact human-readable report for the Options page Test button.
+	 * Remove once Tier B privacy mode ships.
+	 */
+	public async testPrivacySecret(tabId: number): Promise<{
+		hexPreview:  string;
+		cached:      boolean;
+		blobLength:  number;
+		blobPreview: string;
+		roundTripOk: boolean;
+	}> {
+		const { sessionID } = await this.getSession();
+		const cachedFirst = await PrivacySecret.getCached(sessionID);
+		const secret = cachedFirst ?? await PrivacySecret.getOrDerive(sessionID, tabId);
+
+		const sampleSecret = new Uint8Array(secret);
+		let hex = '';
+		for (let i = 0; i < sampleSecret.length; i++) hex += sampleSecret[i].toString(16).padStart(2, '0');
+
+		// Encrypt → decrypt a known payload and verify equality.
+		const samplePayload = {
+			artist:    'Empire of the Sun',
+			title:     'We Are the People',
+			timestamp: new Date().toISOString(),
+		};
+		const blob = await PrivacyCipher.encrypt(samplePayload, secret);
+		const decoded = await PrivacyCipher.decrypt(blob, secret) as typeof samplePayload;
+		const roundTripOk =
+			decoded.artist    === samplePayload.artist &&
+			decoded.title     === samplePayload.title &&
+			decoded.timestamp === samplePayload.timestamp;
+
+		return {
+			hexPreview:  hex.slice(0, 16) + '…',
+			cached:      cachedFirst !== null,
+			blobLength:  blob.length,
+			blobPreview: blob.slice(0, 24) + '…',
+			roundTripOk,
+		};
+	}
+
+	/**
+	 * Pre-derive (or load) the privacy secret so subsequent encrypted
+	 * scrobbles can run silently without a Keychain prompt mid-listen.
+	 * Called from the privacy-mode toggle handler when the user flips a
+	 * kind ON for the first time. No-op if a secret is already cached.
+	 *
+	 * Throws if Keychain is unavailable or rejects the signature — the
+	 * toggle handler reverts the UI in that case.
+	 */
+	public async ensurePrivacySecret(tabId: number): Promise<void> {
+		const { sessionID } = await this.getSession();
+		await PrivacySecret.getOrDerive(sessionID, tabId);
+	}
+
 	/** Private methods */
 
 	private async broadcastScrobble(
@@ -412,6 +479,21 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			? `Now playing: ${displayLeft ? `${displayLeft} - ` : ''}${displayRight}`
 			: `Scrobble: ${displayLeft ? `${displayLeft} - ` : ''}${displayRight}`;
 
+		// Tier-B privacy: when the kind-specific toggle is on, swap the
+		// public payload for an encrypted envelope. The envelope keeps
+		// `app`/`kind`/`timestamp` plaintext (chain observers see "@user
+		// scrobbled something of kind=song at HH:MM") and stuffs everything
+		// else into an AES-GCM blob only the user can decrypt.
+		const broadcastPayload = await this.maybeEncryptPayload(username, kind, payload);
+		if (broadcastPayload === null) {
+			// Privacy mode requested but no cached secret available — refuse
+			// to broadcast in plaintext (privacy violation) and refuse to
+			// prompt mid-listen (would interrupt the user). Skip silently;
+			// the next scrobble after they re-toggle privacy will catch up.
+			this.debugLog('Privacy mode on but no cached secret — skipping broadcast', 'warn');
+			return ServiceCallResult.ERROR_OTHER;
+		}
+
 		try {
 			await injectRelay(tabId);
 			// Fire and forget — Keychain handles the signing asynchronously.
@@ -422,7 +504,7 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 				payload: {
 					username,
 					id: CUSTOM_JSON_ID,
-					json: JSON.stringify(payload),
+					json: JSON.stringify(broadcastPayload),
 					displayMsg,
 				},
 			}).catch(() => {/* channel closed before response — tx still broadcasts */});
@@ -431,5 +513,74 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			this.debugLog('Failed to broadcast custom_json via Keychain', 'error');
 			return ServiceCallResult.ERROR_OTHER;
 		}
+	}
+
+	/**
+	 * If privacy mode is on for this scrobble's kind, returns an encrypted
+	 * envelope payload; otherwise returns the plaintext payload unchanged.
+	 * Returns `null` when privacy is on but the secret can't be loaded —
+	 * the caller treats that as a hard skip (don't broadcast plaintext).
+	 *
+	 * Public-envelope shape:
+	 *   { app, kind, timestamp, private: <base64-blob>, v: 1 }
+	 *
+	 * Encrypted blob contains everything else (artist, title, url, duration,
+	 * percent_played, isrc, album, year, season, episode_number, ...).
+	 */
+	private async maybeEncryptPayload(
+		username: string,
+		kind: HiveScrobblePayload['kind'],
+		payload: HiveScrobblePayload & { now_playing?: boolean },
+	): Promise<object | null> {
+		const flag = privacyFlagForKind(kind);
+		const opts = await BrowserStorage.getStorage(BrowserStorage.OPTIONS).get() as GlobalOptions | null;
+		const enabled = !!(opts && opts[flag]);
+		if (!enabled) return payload;
+
+		const secret = await PrivacySecret.getCached(username);
+		if (!secret) return null;
+
+		// Pull out the fields that stay public; encrypt everything else.
+		const { app, kind: payloadKind, timestamp, now_playing, ...privateFields } = payload;
+		const blob = await PrivacyCipher.encrypt(privateFields, secret);
+
+		const envelope: Record<string, unknown> = {
+			app,
+			kind: payloadKind,
+			timestamp,
+			private: blob,
+			v: 1,
+		};
+		if (now_playing) envelope.now_playing = true;
+		return envelope;
+	}
+}
+
+/**
+ * Map a scrobble's kind to the storage key for its privacy toggle.
+ * Four buckets:
+ *   - song              → MUSIC
+ *   - video             → VIDEOS  (non-music YouTube)
+ *   - movie / episode   → MOVIES_TV (Netflix, Disney+, etc.)
+ *   - podcast           → PODCASTS
+ */
+function privacyFlagForKind(
+	kind: HiveScrobblePayload['kind'],
+):
+	| typeof HIVE_PRIVACY_MUSIC
+	| typeof HIVE_PRIVACY_VIDEOS
+	| typeof HIVE_PRIVACY_MOVIES_TV
+	| typeof HIVE_PRIVACY_PODCASTS {
+	switch (kind) {
+		case 'video':
+			return HIVE_PRIVACY_VIDEOS;
+		case 'movie':
+		case 'episode':
+			return HIVE_PRIVACY_MOVIES_TV;
+		case 'podcast':
+			return HIVE_PRIVACY_PODCASTS;
+		case 'song':
+		default:
+			return HIVE_PRIVACY_MUSIC;
 	}
 }

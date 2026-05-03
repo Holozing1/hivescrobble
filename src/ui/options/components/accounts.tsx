@@ -153,6 +153,65 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 					>
 						{t('accountsSignOut')}
 					</button>
+					<button
+						class={styles.button}
+						title="DEBUG: derive (or load cached) the privacy secret and show a hex preview"
+						onClick={() =>
+							void (async () => {
+								// Reuse the same tab-finding pattern as Connect — privacy
+								// derivation needs an http(s) tab to inject the MAIN-world relay.
+								const tabs = await browser.tabs.query({});
+								const candidates = tabs.filter(
+									(t) => t.id != null && t.url && /^https?:/.test(t.url),
+								);
+								if (candidates.length === 0) {
+									alert(
+										'No http(s) tab open — privacy derivation needs one to inject the Keychain relay. Open scrobble.life or any music site first.',
+									);
+									return;
+								}
+								let lastErr: unknown = null;
+								for (const tab of candidates) {
+									if (!tab.id) continue;
+									try {
+										const result = await (
+											scrobbler() as HiveScrobbler
+										).testPrivacySecret(tab.id);
+										const lines = [
+											`Secret (${result.cached ? 'cached' : 'fresh'}): ${result.hexPreview}`,
+											`Blob length: ${result.blobLength} chars`,
+											`Blob preview: ${result.blobPreview}`,
+											`Encrypt → decrypt round-trip: ${result.roundTripOk ? '✅ OK' : '❌ FAILED'}`,
+										];
+										alert(lines.join('\n'));
+										return;
+									} catch (err) {
+										lastErr = err;
+										const msg = err instanceof Error ? err.message : String(err);
+										if (
+											msg.includes('error page') ||
+											msg.includes('Cannot access') ||
+											msg.includes('Frame with ID') ||
+											msg.includes('No tab with id')
+										) {
+											continue;
+										}
+										alert(`Privacy derivation failed: ${msg}`);
+										return;
+									}
+								}
+								alert(
+									`Privacy derivation failed — every open tab refused script injection.${
+										lastErr instanceof Error
+											? `\n\n(${lastErr.message})`
+											: ''
+									}`,
+								);
+							})()
+						}
+					>
+						🔒 Test privacy secret
+					</button>
 				</div>
 			</Show>
 		</div>
