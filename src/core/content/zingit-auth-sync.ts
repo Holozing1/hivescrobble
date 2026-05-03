@@ -86,8 +86,40 @@ function announce(username: string | null): void {
 	}
 }
 
+/**
+ * Drop a presence marker the Zingit website can read to detect that the
+ * extension is installed (and which version). Set both as a `data-` attr
+ * on `<html>` (synchronous read by the page) AND a CustomEvent (catches
+ * the case where the page mounted before this content script ran). The
+ * page reads version-string-or-null and shows a CTA accordingly.
+ *
+ * Read on the page side via:
+ *   document.documentElement.dataset.hobblesInstalled
+ *   document.addEventListener('hobbles:present', (e) => e.detail.version)
+ */
+function announcePresence(): void {
+	let version = '';
+	try {
+		version = browser.runtime.getManifest().version ?? '';
+	} catch {
+		// Manifest unreachable in some odd contexts — leave version blank.
+	}
+	try {
+		document.documentElement.setAttribute('data-hobbles-installed', version || '1');
+		document.dispatchEvent(
+			new CustomEvent('hobbles:present', { detail: { version } }),
+		);
+	} catch {
+		// DOM not ready or sandboxed — non-fatal.
+	}
+}
+
 export function setupZingitAuthSync(): void {
 	if (!isAllowedHost()) return;
+
+	// Presence marker — runs first so the website can detect us even
+	// before any auth sync has happened.
+	announcePresence();
 
 	// Initial announce — covers the case where the page loaded after the
 	// extension was already connected.
