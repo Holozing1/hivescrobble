@@ -11,6 +11,9 @@
   "scripts": {
     "dist": "npm run build dist",
     "dev": "npm run build dev chrome",
+    "dev:firefox": "npm run build dev firefox",
+    "dist:firefox": "npm run build dist firefox",
+    "lint:firefox": "web-ext lint --source-dir=build/firefox",
     "build": "tsx build.ts",
     "checkts": "tsc --noEmit && tsc --noEmit --project tsconfig.connectors.json",
     "test": "vitest",

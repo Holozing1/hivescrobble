@@ -28,13 +28,13 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} web-scrobbler-chrome.zip --clobber
+          gh release upload ${{ github.event.release.tag_name }} hive-scrobbler-chrome.zip --clobber
 
       - name: Publish the extension for Chrome
         uses: trmcnvn/chrome-addon@v2
         with:
           extension: hhinaapppaileiechjoiifaancjggfjm
-          zip: web-scrobbler-chrome.zip
+          zip: hive-scrobbler-chrome.zip
           client-id: ${{ secrets.CHROME_CLIENT_ID }}
           client-secret: ${{ secrets.CHROME_CLIENT_SECRET }}
           refresh-token: ${{ secrets.CHROME_REFRESH_TOKEN }}
@@ -62,7 +62,7 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: |
-          gh release upload ${{ github.event.release.tag_name }} web-scrobbler-firefox.zip --clobber
+          gh release upload ${{ github.event.release.tag_name }} hive-scrobbler-firefox.zip --clobber
 
       - name: Publish the extension for Firefox
         uses: inverse/firefox-addon@v0.0.7-alpha
@@ -70,8 +70,8 @@ jobs:
           api_key: ${{ secrets.AMO_ISSUER }}
           api_secret: ${{ secrets.AMO_SECRET }}
           guid: '{799c0914-748b-41df-a25c-22d008f9e83f}'
-          xpi_path: web-scrobbler-firefox.zip
-          src_path: web-scrobbler-src.zip
+          xpi_path: hive-scrobbler-firefox.zip
+          src_path: hive-scrobbler-src.zip
           approval_notes: |
             # Version ${{ github.event.release.tag_name }} upload
 
@@ -114,6 +114,6 @@ jobs:
           product_id: ${{ secrets.EDGE_PRODUCT_ID }}
           client_id: ${{ secrets.EDGE_CLIENT_ID }}
           api_key: ${{ secrets.EDGE_API_KEY }}
-          zip: web-scrobbler-chrome.zip # Compatible with Chrome
+          zip: hive-scrobbler-chrome.zip # Compatible with Chrome
           notes: 'Version ${{ env.PACKAGE_VERSION }} upload'
           debug: true

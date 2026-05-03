@@ -12,7 +12,7 @@ function createSafariDistributable() {
 async function createSrcArchive() {
 	colorLog('Creating src archive', 'info');
 	const curDir = path.resolve(path.dirname(''));
-	const outputFile = `${curDir}/web-scrobbler-src.zip`;
+	const outputFile = `${curDir}/hive-scrobbler-src.zip`;
 
 	try {
 		execSync(`git archive --format=zip --output="${outputFile}" HEAD`, {
@@ -34,7 +34,7 @@ export default async function createDistributable() {
 
 	colorLog(`Creating distributable for ${releaseTarget}`, 'info');
 	const curDir = path.resolve(path.dirname(''));
-	const outputFile = `${curDir}/web-scrobbler-${releaseTarget}.zip`;
+	const outputFile = `${curDir}/hive-scrobbler-${releaseTarget}.zip`;
 	const output = fs.createWriteStream(outputFile);
 
 	const archive = archiver('zip', {

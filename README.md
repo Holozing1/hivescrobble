@@ -15,21 +15,11 @@ Every song you listen to is recorded as a `custom_json` operation on Hive — fe
 
 ## Supported Platforms
 
-- YouTube
-- YouTube Music
-- Spotify
-- SoundCloud
-- Apple Music
-- Tidal
-- Deezer
-- Amazon Music
-- Bandcamp
-- Audius
-- Mixcloud
-- Audiomack
-- Pandora
-- iHeartRadio
-- SiriusXM
+**Music**: YouTube, YouTube Music, Spotify, SoundCloud, Apple Music, Tidal, Deezer, Amazon Music, Bandcamp, Audius, Mixcloud, Audiomack, Pandora, iHeartRadio, SiriusXM
+
+**Movies & TV**: Netflix, Disney+, Max (HBO), Prime Video
+
+**Podcasts**: Overcast, Pocket Casts, Spotify shows
 
 ## Requirements
 
@@ -50,15 +40,17 @@ Hive Scrobbler is not yet on extension stores. Install it from source:
 ### Chrome / Edge / Brave
 
 1. Clone or download this repo
-2. Run `npm install` then `npm run build dist chrome`
+2. Run `npm install` then `npm run dist chrome`
 3. Open `chrome://extensions`, enable **Developer mode**
 4. Click **Load unpacked** and select the `build/chrome` folder
 
 ### Firefox
 
-1. Run `npm run build dist firefox`
+1. Run `npm install` then `npm run dist:firefox`
 2. Open `about:debugging#/runtime/this-firefox`
-3. Click **Load Temporary Add-on** and select any file inside `build/firefox`
+3. Click **Load Temporary Add-on** and select `build/firefox/manifest.json`
+
+Firefox treats this as temporary — it'll be removed on browser restart until the build is signed by Mozilla Add-ons (AMO).
 
 ## How Scrobbling Works
 
@@ -73,14 +65,21 @@ Hive Scrobbler is not yet on extension stores. Install it from source:
 # Install dependencies
 npm install
 
-# Dev build (auto-rebuilds on changes)
-npm run build dev chrome
+# Dev build, Chrome (auto-rebuilds on changes)
+npm run dev
 
-# Production build
-npm run build dist chrome
+# Dev build, Firefox
+npm run dev:firefox
+
+# Production build + zip
+npm run dist chrome     # → build/chrome/    + hive-scrobbler-chrome.zip
+npm run dist:firefox    # → build/firefox/   + hive-scrobbler-firefox.zip + hive-scrobbler-src.zip
+
+# Lint the Firefox build (web-ext)
+npm run lint:firefox
 ```
 
-Built output goes to `build/chrome/`.
+See [`SOURCE_BUILD.md`](./SOURCE_BUILD.md) for the build reproduction details required by AMO reviewers.
 
 ## License
 
