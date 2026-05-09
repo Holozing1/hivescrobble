@@ -42,6 +42,17 @@ if ('cleanup' in window && typeof window.cleanup === 'function') {
 				attributes?: { [key: string]: string };
 			};
 			id: unknown;
+			// MusicKit MediaItem exposes the song's canonical
+			// Apple Music URL via attributes.url (preferred) or
+			// url. Reading them lets us send the actual song
+			// permalink as originUrl instead of the current page
+			// URL, which is wrong any time the user is browsing a
+			// playlist / search / library while a track plays.
+			url?: string;
+			attributes?: {
+				url?: string;
+				isrc?: string;
+			};
 		};
 		currentPlaybackDuration: number;
 		currentPlaybackTime: number;
@@ -112,6 +123,8 @@ if ('cleanup' in window && typeof window.cleanup === 'function') {
 			duration: instance.currentPlaybackDuration,
 			uniqueID: item?.id,
 			currentTime: instance.currentPlaybackTime,
+			originUrl: item?.attributes?.url ?? item?.url ?? null,
+			isrc: item?.attributes?.isrc ?? null,
 		};
 	}
 
