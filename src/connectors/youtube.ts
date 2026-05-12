@@ -722,8 +722,61 @@ function getTrackInfoFromYoutubeMusic():
 // recovers the real track name.
 const SONG_SECTION_NAMES = /^(intro|pre[-\s]?intro|verse(\s*\d+)?|pre[-\s]?chorus|chorus(\s*\d+)?|hook|drop|build([-\s]?up)?|breakdown|bridge|interlude|outro|coda|refrain|ad[-\s]?lib|instrumental|solo)$/i;
 
+// Strong positive: title contains an explicit album / live / mix / set
+// keyword. These almost always mean "this video is a compilation; each
+// chapter is its own track."
+const ALBUM_LIKE_TITLE = /(?:\bfull\s+album\b|\bthe\s+album\b|\bcomplete\s+album\b|\blive\s+(?:at|in|from|@)\b|\bconcert\b|\blive\s+(?:set|show|recording)\b|\bdj\s+set\b|\bfull\s+set\b|\bsetlist\b|\bmix(?:tape)?\b|\btracklist\b)/i;
+
+/**
+ * Decide whether the video's chapters represent *separate tracks* (an
+ * album / live set / DJ mix) or *navigation markers within a single
+ * piece of content* (a music video with sections, a movie with acts,
+ * a tutorial with steps).
+ *
+ * Conservative default — only treats chapters as tracks when at least
+ * one positive music-compilation signal fires. Otherwise the caller
+ * falls through to the title-based getter, so the WHOLE video
+ * scrobbles as one track and chapter transitions don't re-trigger.
+ *
+ * Fixes the dudeontheweb-reported bug where each chapter of a
+ * chaptered video (e.g. a movie or tutorial) was firing a Keychain
+ * prompt + notification.
+ */
+function chaptersLookLikeTracks(): boolean {
+	const title    = getCurrentVideoTitle();
+	const channel  = getCurrentChannelName();
+	const duration = getCurrentVideoDurationSec();
+	const category = getVideoCategory();
+
+	// Strong NEGATIVES — bail out fast.
+	if (looksLikeNonMusicVideo(title, channel)) return false;
+	if (category != null && category !== categoryPending && category !== categoryMusic) return false;
+
+	// Strong POSITIVES — title literally says "album" / "live" / "set" / "mix".
+	if (title && ALBUM_LIKE_TITLE.test(title)) return true;
+
+	// Duration gate: an "album" or "concert" worth chaptering is
+	// almost always at least ~15 minutes. Anything shorter is much
+	// more likely to be a single song with section markers OR a
+	// regular video with navigation chapters.
+	if (duration == null || duration < 15 * 60) return false;
+
+	// Long video + recognisable music channel/title pattern = album.
+	// (vevo / -topic / official music video, etc.)
+	if (looksLikeMusicSignal(title, channel)) return true;
+
+	// Long video + explicit YouTube "Music" category — treat as album
+	// only when we've confirmed the category fetched (categoryPending
+	// is a stub set before the fetch lands).
+	if (category === categoryMusic) return true;
+
+	// Default: chapters are navigation markers, not separate tracks.
+	return false;
+}
+
 function getTrackInfoFromChapters() {
-	// Short circuit if chapters not available - necessary to avoid misscrobbling with SponsorBlock.
+	// Short circuit if chapters not available — also dodges SponsorBlock
+	// hijacking the chapter element.
 	if (!areChaptersAvailable()) {
 		return {
 			artist: null,
@@ -731,9 +784,19 @@ function getTrackInfoFromChapters() {
 		};
 	}
 
+	// Gate: only treat chapters as separate tracks when the video
+	// looks like an album / live set / DJ mix. Otherwise the chapters
+	// are navigation markers and we scrobble the whole video as one
+	// track via the title-based getter (no per-chapter notifications,
+	// no per-chapter Keychain prompts).
+	if (!chaptersLookLikeTracks()) {
+		return { artist: null, track: null };
+	}
+
 	const chapterName = Util.getTextFromSelectors(chapterNameSelector);
-	// Skip chapters that look like song-section labels — fall through to
-	// the title-based getter so the actual track name wins.
+	// Belt-and-braces: even on a confirmed album video, a single
+	// chapter labelled "Intro" / "Outro" / "Bridge" is still a section
+	// label, not a track. Fall through.
 	if (chapterName && SONG_SECTION_NAMES.test(chapterName.trim())) {
 		return { artist: null, track: null };
 	}
