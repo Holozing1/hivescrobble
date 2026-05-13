@@ -136,7 +136,7 @@
         "description": "Option title"
     },
     "optionYtDesc": {
-        "message": "If you turn off both options, the extension will scrobble YouTube videos from all categories.",
+        "message": "Category filters: tick one or both to scrobble ONLY those categories. Leave both unticked to scrobble videos from every category.",
         "description": "Description of YouTube options"
     },
     "optionPercentDesc": {
@@ -144,27 +144,27 @@
         "description": "Description of scrobble percent option"
     },
     "optionYtMusicOnly": {
-        "message": "Scrobble videos from \"Music\" category",
+        "message": "Restrict to \"Music\" category videos",
         "description": "Option title"
     },
     "optionYtMusicOnlyTitle": {
-        "message": "Ignore videos that are not in Music category",
+        "message": "Tick to scrobble ONLY videos YouTube classifies as Music. Untick to allow any category through (combined with the Entertainment filter below).",
         "description": "Option label"
     },
     "optionYtEntertainmentOnly": {
-        "message": "Scrobble videos from \"Entertainment\" category",
+        "message": "Restrict to \"Entertainment\" category videos",
         "description": "Option label"
     },
     "optionYtEntertainmentOnlyTitle": {
-        "message": "Ignore videos that are not in Entertainment category",
+        "message": "Tick to scrobble ONLY videos YouTube classifies as Entertainment. Untick to allow any category through (combined with the Music filter above).",
         "description": "Option title"
     },
     "optionYtNonMusicVideos": {
-        "message": "Scrobble non-music videos as videos",
+        "message": "Tag non-music videos as videos (not songs)",
         "description": "Option label"
     },
     "optionYtNonMusicVideosTitle": {
-        "message": "When YouTube Music doesn't recognise a video as music, log it to your videos history instead of skipping it. Turn off to keep your history music-only.",
+        "message": "When YouTube Music doesn't recognise a video as music, log it to your videos history with kind=video. Untick to skip non-music videos entirely.",
         "description": "Option title"
     },
     "optionYtGetTrackInfoFromYtMusic": {

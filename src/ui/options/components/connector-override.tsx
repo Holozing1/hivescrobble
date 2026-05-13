@@ -135,7 +135,7 @@ const MUSIC_CONNECTOR_IDS = new Set([
 ]);
 
 /**
- * Video + podcast connectors. Movies/TV scrobble as kind=movie or
+ * Movie / TV / podcast connectors. Movies/TV scrobble as kind=movie or
  * kind=episode; podcast players scrobble as kind=podcast.
  */
 const VIDEO_PODCAST_CONNECTOR_IDS = new Set([
@@ -149,6 +149,17 @@ const VIDEO_PODCAST_CONNECTOR_IDS = new Set([
 	'pocketcasts',
 ]);
 
+/**
+ * General video-platform connectors — scrobble as kind=video. Distinct
+ * from movie/TV streamers because the content is mostly user-generated:
+ * vlogs, talks, music videos, gaming clips. Separate section so users
+ * can find them by purpose.
+ */
+const VIDEO_PLATFORM_CONNECTOR_IDS = new Set([
+	'3speak',
+	'3speak-embed',
+]);
+
 // Preserve the order from connectors.ts within each category so the lists
 // stay deterministic across builds.
 const musicConnectors = connectors.filter((c) =>
@@ -156,6 +167,9 @@ const musicConnectors = connectors.filter((c) =>
 );
 const videoPodcastConnectors = connectors.filter((c) =>
 	VIDEO_PODCAST_CONNECTOR_IDS.has(c.id),
+);
+const videoPlatformConnectors = connectors.filter((c) =>
+	VIDEO_PLATFORM_CONNECTOR_IDS.has(c.id),
 );
 
 /**
@@ -173,6 +187,19 @@ function ConnectorOptions(props: {
 				Music
 			</li>
 			<For each={musicConnectors}>
+				{(connector) => (
+					<ConnectorOption
+						setActiveModal={props.setActiveModal}
+						modal={props.modal}
+						connector={connector}
+					/>
+				)}
+			</For>
+
+			<li style="margin-top: 1.25rem; font-size: 0.85rem; font-weight: 600; opacity: 0.7; text-transform: uppercase; letter-spacing: 0.06em;">
+				Videos
+			</li>
+			<For each={videoPlatformConnectors}>
 				{(connector) => (
 					<ConnectorOption
 						setActiveModal={props.setActiveModal}
