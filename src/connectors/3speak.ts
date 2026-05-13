@@ -31,9 +31,20 @@ type VideoMeta = { title: string; author: string };
 let videoMeta: VideoMeta | null = null;
 let lastFetchedRef: string | null = null;
 
+/** Only accept the two routes we explicitly support — full /watch page
+ *  and /embed iframe. Bails on /shorts (TikTok-style feed that
+ *  auto-advances through short clips; needs different scrobbling
+ *  semantics) and any other route. */
+function isSupportedRoute(): boolean {
+	const p = window.location.pathname;
+	return p === '/watch' || p === '/embed';
+}
+
 /** Parse `?v=author/permlink` from the current URL. Works for both
- *  /watch?v=... and /embed?v=... since both paths carry the same param. */
+ *  /watch?v=... and /embed?v=... since both paths carry the same param.
+ *  Returns null on unsupported routes (notably /shorts). */
 function getVideoRef(): { author: string; permlink: string; raw: string } | null {
+	if (!isSupportedRoute()) return null;
 	const params = new URLSearchParams(window.location.search);
 	const v = params.get('v');
 	if (!v) return null;

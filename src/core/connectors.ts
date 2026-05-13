@@ -81,21 +81,25 @@ export default <ConnectorMeta[]>[
 		usesBlocklist: true,
 	},
 	{
-		// 3Speak — Hive-native video platform. Watch page itself
+		// 3Speak — Hive-native video platform. Watch page only
 		// (https://3speak.tv/watch?v=author/permlink). kind='video' so
 		// scrobble.life routes into the /videos tab.
+		//
+		// Match pattern deliberately scoped to /watch so we don't
+		// touch /shorts (TikTok-style auto-advance feed) or any other
+		// 3Speak route. Shorts can be added later if the use case
+		// warrants — but auto-advance + short clips would need
+		// dedicated scrobbling logic anyway.
 		label: '3Speak',
-		matches: ['*://3speak.tv/*', '*://*.3speak.tv/*'],
+		matches: ['*://3speak.tv/watch*', '*://*.3speak.tv/watch*'],
 		js: '3speak.js',
 		id: '3speak',
 	},
 	{
 		// 3Speak Embed — iframes shown on Hive frontends (peakd,
 		// ecency, hive.blog) and any other site that embeds 3Speak.
-		// Same JS bundle as the main connector; the cascading
-		// fallbacks (og:title → URL params) cover the stripped-down
-		// embed DOM. `allFrames: true` is required so the connector
-		// runs inside the iframe context.
+		// Same JS bundle as the main connector. `allFrames: true` is
+		// required so the connector runs inside the iframe context.
 		label: '3Speak Embed',
 		matches: ['*://3speak.tv/embed*', '*://*.3speak.tv/embed*'],
 		js: '3speak.js',
