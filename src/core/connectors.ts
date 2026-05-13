@@ -81,6 +81,28 @@ export default <ConnectorMeta[]>[
 		usesBlocklist: true,
 	},
 	{
+		// 3Speak — Hive-native video platform. Watch page itself
+		// (https://3speak.tv/watch?v=author/permlink). kind='video' so
+		// scrobble.life routes into the /videos tab.
+		label: '3Speak',
+		matches: ['*://3speak.tv/*', '*://*.3speak.tv/*'],
+		js: '3speak.js',
+		id: '3speak',
+	},
+	{
+		// 3Speak Embed — iframes shown on Hive frontends (peakd,
+		// ecency, hive.blog) and any other site that embeds 3Speak.
+		// Same JS bundle as the main connector; the cascading
+		// fallbacks (og:title → URL params) cover the stripped-down
+		// embed DOM. `allFrames: true` is required so the connector
+		// runs inside the iframe context.
+		label: '3Speak Embed',
+		matches: ['*://3speak.tv/embed*', '*://*.3speak.tv/embed*'],
+		js: '3speak.js',
+		id: '3speak-embed',
+		allFrames: true,
+	},
+	{
 		label: 'MySpace',
 		matches: ['*://myspace.com/*'],
 		js: 'myspace.js',
