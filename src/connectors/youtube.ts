@@ -278,10 +278,18 @@ const STRONG_NON_MUSIC_TITLE_PATTERNS: RegExp[] = [
 // Songs are almost always 2-7 minutes; anything dramatically longer that
 // doesn't have an explicit music signal (Topic / VEVO channel, "Official
 // Music Video" in title) is overwhelmingly likely to be non-music
-// long-form content (gaming streams, podcasts, vlogs, full documentaries).
-// Threshold deliberately conservative — extended remixes and DJ-set tracks
-// can occasionally push 10-15 min, but past 15 min the signal is strong.
-const LONG_FORM_THRESHOLD_SEC = 15 * 60
+// long-form content (gaming streams, podcasts, vlogs, full documentaries,
+// talk-show clips).
+//
+// Two thresholds:
+//   - 15 min: hard cap. Anything past this without a positive music
+//     signal is treated as non-music. Catches gaming/podcast streams.
+//   - 8 min: soft cap. Triggers stricter scrutiny — requires explicit
+//     music signal (Topic/VEVO/Records channel, "Official Music Video"
+//     etc.) before the connector accepts as music. Catches talk-show
+//     clips (~8-12 min) that slip past the hard cap.
+const LONG_FORM_THRESHOLD_SEC      = 15 * 60
+const MEDIUM_FORM_THRESHOLD_SEC    = 8 * 60
 
 const MUSIC_CHANNEL_HINTS = [
 	/\bvevo\b/i,
@@ -319,12 +327,27 @@ const NON_MUSIC_CHANNEL_PATTERNS: RegExp[] = [
 	/paramount\s+pictures/i, /lionsgate/i, /disney(\s|$)/i, /pixar/i,
 	/apple\s+tv/i, /amazon\s+mgm/i, /rotten\s+tomatoes/i, /ign\s+movies/i,
 	/fandango/i, /kinocheck/i, /netflix/i, /\bhbo\b/i, /hulu/i, /\ba24\b/i,
+	// Late-night / talk shows. Add by show name; their official YouTube
+	// uploads use these channel names exactly. Without these patterns, a
+	// 10-min Late Show clip with a "Trump: ... | When ... | Don't ..." title
+	// got misparsed as song "Trump — I Don't Think About Anybody".
+	/\blate\s+show\b/i, /\btonight\s+show\b/i, /\bdaily\s+show\b/i,
+	/\bsaturday\s+night\s+live\b/i, /\bsnl\b/i, /\blate\s+late\s+show\b/i,
+	/\bjimmy\s+(kimmel|fallon)\b/i, /\bjames\s+corden\b/i,
+	/\bconan\s+o'?brien\b/i, /\bstephen\s+colbert\b/i, /\bseth\s+meyers\b/i,
+	/\btrevor\s+noah\b/i, /\bjohn\s+oliver\b/i, /\blast\s+week\s+tonight\b/i,
 	// Common non-music patterns in channel names
 	/\bgaming\b/i, /\bplays\b/i, /\bgameplay\b/i,
 	/\bpodcast\b/i, /\bnews\b/i, /\btech\b/i, /\breviews?\b/i,
 ];
 
 const WEAK_NON_MUSIC_TITLE_KEYWORDS = /\b(trailer|teaser|review|reviewing|interview|podcast|vlog|reaction|gameplay|highlights?|montage)\b/i;
+
+// Talk-show / late-night titles almost always carry 2+ pipe separators
+// (e.g. "Trump: ... | When Does The President Sleep? | Don't Worry About
+// Hantavirus"). Music titles essentially never structure themselves this
+// way. Three or more ` | ` chunks AND no music signal → treat as non-music.
+const MULTI_PIPE_TITLE = /(?:\s\|\s.+){2,}/;
 
 function looksLikeNonMusicVideo(
 	title:   string | null | undefined,
@@ -373,6 +396,20 @@ Connector.isVideo = () => {
 	const durationSec = getCurrentVideoDurationSec();
 	if (durationSec != null && durationSec > LONG_FORM_THRESHOLD_SEC) {
 		if (!looksLikeMusicSignal(title, channel)) return true;
+	}
+
+	// Medium-form gate: 8-15 min clips need a positive music signal to
+	// be accepted. Catches talk-show / late-night clips that slip past
+	// the 15-min hard cap with titles parseable as song-like strings.
+	if (durationSec != null && durationSec > MEDIUM_FORM_THRESHOLD_SEC) {
+		if (!looksLikeMusicSignal(title, channel)) return true;
+	}
+
+	// Multi-pipe title heuristic — talk-show formats almost always
+	// chain 2+ pipe-separated segments, music titles essentially never
+	// do. Treat as non-music when both signals match.
+	if (title && MULTI_PIPE_TITLE.test(title) && !looksLikeMusicSignal(title, channel)) {
+		return true;
 	}
 
 	return false;
