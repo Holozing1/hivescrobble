@@ -95,7 +95,7 @@ export const firefoxManifest: Manifest.WebExtensionManifest = {
 
 	browser_specific_settings: {
 		gecko: {
-			id: '{799c0914-748b-41df-a25c-22d008f9e83f}',
+			id: '{ee0b9f5c-e2a4-4186-a981-bcee2c057a31}',
 			data_collection_permissions: {
 				required: ['browsingActivity', 'websiteContent'],
 			},
