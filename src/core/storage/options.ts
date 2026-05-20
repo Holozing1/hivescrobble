@@ -18,7 +18,6 @@ export const USE_UNRECOGNIZED_SONG_NOTIFICATIONS =
 export const USE_INFOBOX = 'showInfobox';
 export const SCROBBLE_PODCASTS = 'scrobblePodcasts';
 export const AUTO_TOGGLE_LOVE = 'autoToggleLove';
-export const FORCE_RECOGNIZE = 'forceRecognize';
 export const SCROBBLE_RECOGNIZED_TRACKS = 'scrobbleRecognizedTracks';
 export const SCROBBLE_EDITED_TRACKS_ONLY = 'scrobbleEditedTracksOnly';
 export const SCROBBLE_PERCENT = 'scrobblePercent';
@@ -44,11 +43,6 @@ export const HIVE_PRIVACY_MOVIES_TV = 'hivePrivacyMoviesTv';
 export const HIVE_PRIVACY_PODCASTS  = 'hivePrivacyPodcasts';
 
 export interface GlobalOptions {
-	/**
-	 * Force song recognition.
-	 */
-	[FORCE_RECOGNIZE]: boolean;
-
 	/**
 	 * Use now playing notifications.
 	 */
@@ -144,7 +138,6 @@ export interface GlobalOptions {
  * Object that stores default option values.
  */
 const DEFAULT_OPTIONS: GlobalOptions = {
-	[FORCE_RECOGNIZE]: false,
 	[SCROBBLE_PODCASTS]: true,
 	[USE_NOTIFICATIONS]: true,
 	[USE_UNRECOGNIZED_SONG_NOTIFICATIONS]: false,
@@ -165,7 +158,6 @@ const DEFAULT_OPTIONS: GlobalOptions = {
 };
 
 const OVERRIDE_CONTENT = {
-	[FORCE_RECOGNIZE]: false,
 	[SCROBBLE_RECOGNIZED_TRACKS]: true,
 	[SCROBBLE_EDITED_TRACKS_ONLY]: false,
 	[SCROBBLE_PODCASTS]: true,
@@ -203,7 +195,6 @@ const DEFAULT_CONNECTOR_OPTIONS: ConnectorOptions = {
 };
 
 export interface ConnectorsOverrideOptionValues {
-	[FORCE_RECOGNIZE]?: boolean;
 	[USE_NOTIFICATIONS]?: boolean;
 	[USE_INFOBOX]?: boolean;
 	[SCROBBLE_PODCASTS]?: boolean;

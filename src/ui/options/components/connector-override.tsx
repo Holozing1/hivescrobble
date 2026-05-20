@@ -358,11 +358,6 @@ function ConnectorOverrideOptionDetails(props: {
 					labelledby={`${props.connector.id}-scrobble-behavior`}
 					buttons={[
 						{
-							label: t('optionForceRecognize'),
-							title: t('optionForceRecognizeTitle'),
-							value: Options.FORCE_RECOGNIZE,
-						},
-						{
 							label: t('optionScrobbleRecognizedTracks'),
 							title: t('optionScrobbleRecognizedTracksTitle'),
 							value: Options.SCROBBLE_RECOGNIZED_TRACKS,
@@ -375,13 +370,6 @@ function ConnectorOverrideOptionDetails(props: {
 					]}
 					name={`${props.connector.id}-scrobbleBehavior`}
 					value={() => {
-						if (
-							overrideOptions()?.[props.connector.id]?.[
-								Options.FORCE_RECOGNIZE
-							]
-						) {
-							return Options.FORCE_RECOGNIZE;
-						}
 						if (
 							overrideOptions()?.[props.connector.id]?.[
 								Options.SCROBBLE_EDITED_TRACKS_ONLY
@@ -408,8 +396,6 @@ function ConnectorOverrideOptionDetails(props: {
 							};
 							newOptions[connector.id] = {
 								...(newOptions[connector.id] ?? {}),
-								[Options.FORCE_RECOGNIZE]:
-									value === Options.FORCE_RECOGNIZE,
 								[Options.SCROBBLE_EDITED_TRACKS_ONLY]:
 									value ===
 									Options.SCROBBLE_EDITED_TRACKS_ONLY,
@@ -428,9 +414,6 @@ function ConnectorOverrideOptionDetails(props: {
 							const newOptions = {
 								...(o ?? {}),
 							};
-							delete newOptions[connector.id][
-								Options.FORCE_RECOGNIZE
-							];
 							delete newOptions[connector.id][
 								Options.SCROBBLE_EDITED_TRACKS_ONLY
 							];

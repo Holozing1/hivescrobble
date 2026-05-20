@@ -72,18 +72,18 @@ export async function process(
 		}
 	}
 
-	const forceRecognize = await Options.getOption(
-		Options.FORCE_RECOGNIZE,
-		connector.id,
-	);
 	const scrobbleEditedTracksOnly = await Options.getOption(
 		Options.SCROBBLE_EDITED_TRACKS_ONLY,
 		connector.id,
 	);
 
+	// A song is valid to scrobble once it has an artist + track. The old
+	// Last.fm "recognition" gate is gone — the Hive scrobbler has no
+	// corrections catalogue — so there's no separate force-recognize
+	// path. See CHANGES_FROM_FORK.md "Track Recognition Fix".
 	const hasBasicInfo = Boolean(song.getArtist() && song.getTrack());
 	song.flags.isValid =
-		(isSongValid || Boolean(forceRecognize) || hasBasicInfo) &&
+		(isSongValid || hasBasicInfo) &&
 		(song.flags.isCorrectedByUser || !scrobbleEditedTracksOnly);
 }
 

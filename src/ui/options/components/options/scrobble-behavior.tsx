@@ -24,11 +24,6 @@ export default function ScrobbleBehavior(props: {
 			<RadioButtons
 				buttons={[
 					{
-						label: t('optionForceRecognize'),
-						title: t('optionForceRecognizeTitle'),
-						value: Options.FORCE_RECOGNIZE,
-					},
-					{
 						label: t('optionScrobbleRecognizedTracks'),
 						title: t('optionScrobbleRecognizedTracksTitle'),
 						value: Options.SCROBBLE_RECOGNIZED_TRACKS,
@@ -41,9 +36,6 @@ export default function ScrobbleBehavior(props: {
 				]}
 				name="scrobbleBehavior"
 				value={() => {
-					if (props.options()?.[Options.FORCE_RECOGNIZE]) {
-						return Options.FORCE_RECOGNIZE;
-					}
 					if (
 						props.options()?.[Options.SCROBBLE_EDITED_TRACKS_ONLY]
 					) {
@@ -59,8 +51,6 @@ export default function ScrobbleBehavior(props: {
 						}
 						const newOptions = {
 							...o,
-							[Options.FORCE_RECOGNIZE]:
-								value === Options.FORCE_RECOGNIZE,
 							[Options.SCROBBLE_EDITED_TRACKS_ONLY]:
 								value === Options.SCROBBLE_EDITED_TRACKS_ONLY,
 							[Options.SCROBBLE_RECOGNIZED_TRACKS]:
