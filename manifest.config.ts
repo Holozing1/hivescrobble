@@ -32,6 +32,15 @@ export const common: Manifest.WebExtensionManifest = {
 			resources: ['icons/*'],
 			matches: ['<all_urls>'],
 		},
+		{
+			// Firefox requires any file injected into the MAIN world via
+			// scripting.executeScript({ world: 'MAIN', files: [...] }) to be
+			// web-accessible; otherwise the inject rejects and Keychain
+			// login/scrobble/privacy-signing all fail. Chrome doesn't need
+			// this but it's harmless there.
+			resources: ['content/hive-relay.js'],
+			matches: ['<all_urls>'],
+		},
 	],
 
 	options_ui: {
