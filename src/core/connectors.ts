@@ -60,6 +60,15 @@ export default <ConnectorMeta[]>[
 		id: 'amazon-prime',
 	},
 	{
+		// scrobble.life's in-site player — Audius tracks play through a top-frame
+		// <audio> element this connector reads. (YouTube tracks in the same
+		// player use a youtube.com/embed iframe, handled by YouTube Embed below.)
+		label: 'scrobble.life',
+		matches: ['*://scrobble.life/*', '*://www.scrobble.life/*'],
+		js: 'scrobble-life.js',
+		id: 'scrobble-life',
+	},
+	{
 		label: 'YouTube Embed',
 		matches: [
 			'*://*.youtube.com/embed/*',
