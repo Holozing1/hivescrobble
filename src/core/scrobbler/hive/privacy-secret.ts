@@ -1,6 +1,7 @@
 'use strict';
 
 import browser from 'webextension-polyfill';
+import { verifyChallengeSignature } from './posting-key-verify';
 
 /**
  * Derives a stable AES-256 encryption secret from the user's Hive posting
@@ -51,6 +52,17 @@ export async function getOrDerive(
 	}
 
 	const sig = await signChallenge(username, tabId);
+
+	// Verify the signature really came from this account's posting key before
+	// deriving anything from it — a forged/hijacked signature (the injection
+	// vector) won't recover to the on-chain posting key, so we refuse it.
+	const verified = await verifyChallengeSignature(username, CHALLENGE, sig);
+	if (!verified) {
+		throw new PrivacySecretError(
+			'Posting-key signature verification failed — the signature did not match this account’s on-chain posting key. Refusing to derive a privacy key from an unverified signature.',
+		);
+	}
+
 	const secret = await hashToKey(sig);
 	await store(username, secret);
 	return secret;
