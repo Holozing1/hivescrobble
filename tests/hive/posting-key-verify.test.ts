@@ -1,76 +1,50 @@
-import { describe, it, expect, beforeAll } from 'vitest';
-import * as secp from '@noble/secp256k1';
-import { sha256 } from '@noble/hashes/sha2.js';
-import { hmac } from '@noble/hashes/hmac.js';
+import { describe, it, expect } from 'vitest';
 import {
 	recoverPostingPubkey,
 	decodeHivePubkey,
 	base58Decode,
 } from '@/core/scrobbler/hive/posting-key-verify';
 
-// noble v3 needs hash hooks for sign(). recoverPostingPubkey itself doesn't
-// (it pre-hashes with Web Crypto), but the test signs to build a vector.
-beforeAll(() => {
-	secp.hashes.sha256 = sha256;
-	secp.hashes.hmacSha256 = (key: Uint8Array, msg: Uint8Array) =>
-		hmac(sha256, key, msg);
-});
+// Static vector — a real secp256k1 signature over the challenge in Hive's
+// graphene compact format (header = recoveryId + 31, then r||s, signed over
+// sha256(challenge)), plus the compressed public key that produced it.
+// Generated once with @noble/secp256k1 (a fixed test key) so the test needs
+// no signing deps and is fully deterministic.
+const CHALLENGE = 'zingit:privacy-key:v1';
+const SIG_HEX =
+	'1f9859d6c39fac5f6ff755afd3ee36d764928fa10bf1b53840dfc8d44e802b2f' +
+	'961443acc2c3e8c2a8e6dd7742aa2bfb6e04d9abdc143575d4bf436e0aebb12f13';
+const PUBKEY_HEX =
+	'03f324133f92f203537cd7f9c4f1cf1078020159111a18457809ce3c11950d87eb';
 
-function toHex(b: Uint8Array): string {
-	return Array.from(b)
+const toHex = (b: Uint8Array): string =>
+	Array.from(b)
 		.map((x) => x.toString(16).padStart(2, '0'))
 		.join('');
-}
-
-function bigIntTo32(value: bigint): Uint8Array {
-	let n = value;
-	const out = new Uint8Array(32);
-	for (let i = 31; i >= 0; i--) {
-		out[i] = Number(n & 0xffn);
-		n >>= 8n;
-	}
-	return out;
-}
-
-/** Re-encode a noble signature over `challenge` into Hive's compact format:
- *  [31 + recoveryId, r(32), s(32)] hex. */
-function hiveSigFor(challenge: string, sk: Uint8Array): string {
-	const nobleSig = secp.sign(new TextEncoder().encode(challenge), sk, {
-		format: 'recovered',
-	});
-	const sig = secp.Signature.fromBytes(nobleSig, 'recovered');
-	const hive = new Uint8Array(65);
-	hive[0] = (sig.recovery ?? 0) + 31;
-	hive.set(bigIntTo32(sig.r), 1);
-	hive.set(bigIntTo32(sig.s), 33);
-	return toHex(hive);
-}
-
-const CHALLENGE = 'zingit:privacy-key:v1';
 
 describe('recoverPostingPubkey', () => {
 	it('recovers the exact signing key from a Hive-format signature', async () => {
-		const sk = secp.utils.randomSecretKey();
-		const pub = secp.getPublicKey(sk, true); // 33-byte compressed
-		const recovered = await recoverPostingPubkey(
-			CHALLENGE,
-			hiveSigFor(CHALLENGE, sk),
-		);
+		const recovered = await recoverPostingPubkey(CHALLENGE, SIG_HEX);
 		expect(recovered).not.toBeNull();
-		expect(toHex(recovered!)).toBe(toHex(pub));
+		expect(toHex(recovered!)).toBe(PUBKEY_HEX);
 	});
 
-	it('does not recover the signing key from a tampered signature', async () => {
-		const sk = secp.utils.randomSecretKey();
-		const pub = secp.getPublicKey(sk, true);
-		const hex = hiveSigFor(CHALLENGE, sk);
-		// Flip a byte inside r.
-		const bytes = hex.split('');
-		bytes[10] = bytes[10] === '0' ? '1' : '0';
-		const recovered = await recoverPostingPubkey(CHALLENGE, bytes.join(''));
-		// Either unrecoverable (null) or a different key — never the real one.
+	it('does not recover the same key from a tampered signature', async () => {
+		const flipped = SIG_HEX[10] === '0' ? '1' : '0';
+		const bad = SIG_HEX.slice(0, 10) + flipped + SIG_HEX.slice(11);
+		const recovered = await recoverPostingPubkey(CHALLENGE, bad);
 		if (recovered) {
-			expect(toHex(recovered)).not.toBe(toHex(pub));
+			expect(toHex(recovered)).not.toBe(PUBKEY_HEX);
+		}
+	});
+
+	it('does not recover the same key for a different challenge', async () => {
+		const recovered = await recoverPostingPubkey(
+			'a-different-string',
+			SIG_HEX,
+		);
+		if (recovered) {
+			expect(toHex(recovered)).not.toBe(PUBKEY_HEX);
 		}
 	});
 
