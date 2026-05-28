@@ -8,6 +8,65 @@ import HiveScrobbler from '@/core/scrobbler/hive/hive-scrobbler';
 
 const globalOptions = BrowserStorage.getStorage(BrowserStorage.OPTIONS);
 
+const SCROBBLE_LIFE_URL = 'https://scrobble.life/';
+const SCROBBLE_LIFE_HOSTS = ['scrobble.life', 'www.scrobble.life'];
+
+function isScrobbleLifeUrl(url: string | undefined): boolean {
+	if (!url) {
+		return false;
+	}
+	try {
+		return SCROBBLE_LIFE_HOSTS.includes(new URL(url).hostname);
+	} catch {
+		return false;
+	}
+}
+
+/** Poll until the tab finishes loading (so Keychain has injected). */
+async function waitForTabComplete(
+	tabId: number,
+	timeoutMs = 20000,
+): Promise<void> {
+	const start = Date.now();
+	while (Date.now() - start < timeoutMs) {
+		const tab = await browser.tabs.get(tabId);
+		if (tab.status === 'complete') {
+			return;
+		}
+		await new Promise((r) => setTimeout(r, 300));
+	}
+	throw new Error('scrobble.life took too long to load');
+}
+
+/**
+ * SECURITY: the privacy key is derived from a posting-key signature, and
+ * anything that transits a page's MAIN world is readable by that page. So we
+ * only ever sign on a trusted origin we control — scrobble.life — never an
+ * arbitrary open tab. Reuse an existing scrobble.life tab if one is open,
+ * otherwise open one and wait for it to load.
+ */
+async function getOrOpenScrobbleLifeTab(): Promise<number> {
+	const tabs = await browser.tabs.query({});
+	const existing = tabs.find((t) => t.id != null && isScrobbleLifeUrl(t.url));
+	if (existing?.id != null) {
+		await browser.tabs.update(existing.id, { active: true });
+		return existing.id;
+	}
+	const created = await browser.tabs.create({
+		url: SCROBBLE_LIFE_URL,
+		active: true,
+	});
+	if (created.id == null) {
+		throw new Error(
+			'Could not open a scrobble.life tab for privacy setup.',
+		);
+	}
+	await waitForTabComplete(created.id);
+	// Keychain injects window.hive_keychain shortly after load — give it a beat.
+	await new Promise((r) => setTimeout(r, 800));
+	return created.id;
+}
+
 /**
  * On toggle-flip from OFF→ON, ensure the privacy secret is derived (and
  * cached) up-front so subsequent scrobbles broadcast silently. Throws if
@@ -20,45 +79,8 @@ async function ensurePrivacySecret(): Promise<void> {
 	if (!hive) {
 		throw new Error('Hive scrobbler not loaded');
 	}
-
-	// Find a usable http(s) tab to inject the Keychain relay into.
-	const tabs = await browser.tabs.query({});
-	const candidates = tabs.filter(
-		(t) => t.id != null && t.url && /^https?:/.test(t.url),
-	);
-	if (candidates.length === 0) {
-		throw new Error(
-			'Open scrobble.life or any music site in another tab first — privacy setup needs an http(s) tab to reach Keychain.',
-		);
-	}
-
-	let lastErr: unknown = null;
-	for (const tab of candidates) {
-		if (!tab.id) {
-			continue;
-		}
-		try {
-			await hive.ensurePrivacySecret(tab.id);
-			return;
-		} catch (err) {
-			lastErr = err;
-			const msg = err instanceof Error ? err.message : String(err);
-			if (
-				msg.includes('error page') ||
-				msg.includes('Cannot access') ||
-				msg.includes('Frame with ID') ||
-				msg.includes('No tab with id')
-			) {
-				continue;
-			}
-			throw err;
-		}
-	}
-	throw new Error(
-		`Privacy setup failed — every open tab refused script injection.${
-			lastErr instanceof Error ? `\n\n(${lastErr.message})` : ''
-		}`,
-	);
+	const tabId = await getOrOpenScrobbleLifeTab();
+	await hive.ensurePrivacySecret(tabId);
 }
 
 /**

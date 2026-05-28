@@ -27,9 +27,6 @@ import browser from 'webextension-polyfill';
 const CHALLENGE = 'zingit:privacy-key:v1';
 const STORAGE_KEY_PREFIX = 'privacy_secret_'; // namespaced per username
 
-/** Per-tab MAIN-world relay file used to call window.hive_keychain. */
-const RELAY_FILE = 'content/hive-relay.js';
-
 export class PrivacySecretError extends Error {
 	constructor(reason: string) {
 		super(reason);
@@ -89,63 +86,82 @@ async function store(username: string, secret: ArrayBuffer): Promise<void> {
 }
 
 /**
- * Inject the relay into the given tab and request a signature for our
- * fixed challenge. The relay's existing `hiveConnect` flow uses
- * requestSignBuffer too — same primitive — but it's hard-coded to call
- * with `null` username (Keychain account picker). For privacy-secret
- * derivation we pass the explicit username so Keychain signs with that
- * account's posting key directly, no picker.
+ * Request a posting-key signature over our fixed challenge, in the given tab.
+ *
+ * SECURITY: this must only ever run in a tab on a trusted origin
+ * (scrobble.life) — the caller enforces that. Unlike the public scrobble
+ * relay, the privacy signature must NOT transit the page via
+ * window.postMessage (any co-resident page script could read it and derive
+ * the AES key, or forge a result). Instead we run a MAIN-world function that
+ * calls window.hive_keychain directly and returns the result through the
+ * privileged scripting channel — the page's own JS never sees it. The only
+ * residual exposure is a compromise of the trusted origin itself (which could
+ * hijack window.hive_keychain); the signature verification in getOrDerive
+ * defends against a hijacked Keychain returning a forged signature.
  */
 async function signChallenge(username: string, tabId: number): Promise<string> {
-	await browser.scripting.executeScript({
-		target: { tabId },
-		world: 'MAIN',
-		files: [RELAY_FILE],
-	});
+	type KcResult = {
+		success: boolean;
+		result?: string;
+		message?: string;
+		error?: string;
+	};
+	type Kc = {
+		requestSignBuffer: (
+			u: string | null,
+			message: string,
+			keyType: string,
+			cb: (r: KcResult) => void,
+		) => void;
+	};
 
 	const results = await browser.scripting.executeScript({
 		target: { tabId },
-		world: 'ISOLATED',
+		world: 'MAIN',
 		args: [username, CHALLENGE],
 		func: (user: string, challenge: string) =>
-			new Promise<string>((resolve, reject) => {
-				const id = crypto.randomUUID();
-				const onMessage = (event: MessageEvent) => {
-					const d = event.data as Record<string, unknown>;
-					if (
-						event.source !== window ||
-						!d?.__hive_scrobbler ||
-						d.type !== 'hivePrivacySignResult' ||
-						d.id !== id
-					) {
-						return;
-					}
-					window.removeEventListener('message', onMessage);
-					if (d.error) {
-						reject(new Error(d.error as string));
-					} else {
-						resolve(d.signature as string);
-					}
-				};
-				window.addEventListener('message', onMessage);
-				window.postMessage(
-					{
-						__hive_scrobbler: true,
-						type: 'hivePrivacySign',
-						id,
-						username: user,
-						challenge,
+			new Promise<{ signature?: string; error?: string }>((resolve) => {
+				const kc = (window as unknown as { hive_keychain?: Kc })
+					.hive_keychain;
+				if (!kc) {
+					resolve({
+						error: 'Hive Keychain wasn’t detected on scrobble.life. Make sure the Keychain extension is installed and the tab finished loading.',
+					});
+					return;
+				}
+				kc.requestSignBuffer(
+					user,
+					challenge,
+					'Posting',
+					(r: KcResult) => {
+						if (r.success && r.result) {
+							resolve({ signature: r.result });
+						} else {
+							resolve({
+								error:
+									r.message ||
+									r.error ||
+									'Keychain rejected the signature',
+							});
+						}
 					},
-					'*',
 				);
 			}),
 	});
 
-	const sig = results?.[0]?.result as string | undefined;
-	if (!sig) {
+	const out = results?.[0]?.result as
+		| { signature?: string; error?: string }
+		| undefined;
+	if (!out) {
+		throw new PrivacySecretError('Keychain call returned no result');
+	}
+	if (out.error) {
+		throw new PrivacySecretError(out.error);
+	}
+	if (!out.signature) {
 		throw new PrivacySecretError('Keychain did not return a signature');
 	}
-	return sig;
+	return out.signature;
 }
 
 async function hashToKey(hexSignature: string): Promise<ArrayBuffer> {
