@@ -288,60 +288,96 @@ const STRONG_NON_MUSIC_TITLE_PATTERNS: RegExp[] = [
 //     music signal (Topic/VEVO/Records channel, "Official Music Video"
 //     etc.) before the connector accepts as music. Catches talk-show
 //     clips (~8-12 min) that slip past the hard cap.
-const LONG_FORM_THRESHOLD_SEC      = 15 * 60
-const MEDIUM_FORM_THRESHOLD_SEC    = 8 * 60
+const LONG_FORM_THRESHOLD_SEC = 15 * 60;
+const MEDIUM_FORM_THRESHOLD_SEC = 8 * 60;
 
 const MUSIC_CHANNEL_HINTS = [
 	/\bvevo\b/i,
 	/\s+-\s+topic$/i,
 	/\brecords?$/i,
 	/\bofficial\s+music$/i,
-]
+];
 
 const MUSIC_TITLE_HINTS = [
 	/\bofficial\s+music\s+video\b/i,
 	/\bofficial\s+(audio|video|lyric\s+video)\b/i,
 	/\b(lyric|lyrics)\s+video\b/i,
 	/\bremix\b/i, // remixes are generally still music
-]
+];
 
 function looksLikeMusicSignal(
-	title:   string | null | undefined,
+	title: string | null | undefined,
 	channel: string | null | undefined,
 ): boolean {
-	if (channel && MUSIC_CHANNEL_HINTS.some(re => re.test(channel))) return true
-	if (title   && MUSIC_TITLE_HINTS.some(re   => re.test(title)))   return true
-	return false
+	if (channel && MUSIC_CHANNEL_HINTS.some((re) => re.test(channel))) {
+		return true;
+	}
+	if (title && MUSIC_TITLE_HINTS.some((re) => re.test(title))) {
+		return true;
+	}
+	return false;
 }
 
 function getCurrentVideoDurationSec(): number | null {
-	const v = document.querySelector(videoSelector) as HTMLVideoElement | null
-	if (!v || !isFinite(v.duration) || v.duration <= 0) return null
-	return v.duration / (v.playbackRate || 1)
+	const v = document.querySelector(videoSelector) as HTMLVideoElement | null;
+	if (!v || !isFinite(v.duration) || v.duration <= 0) {
+		return null;
+	}
+	return v.duration / (v.playbackRate || 1);
 }
 
 const NON_MUSIC_CHANNEL_PATTERNS: RegExp[] = [
 	// Movie studios + aggregators
-	/movieclips/i, /marvel\s*(entertainment|studios)?/i, /warner\s+bros/i,
-	/sony\s+pictures/i, /universal\s+pictures/i, /20th\s+century/i,
-	/paramount\s+pictures/i, /lionsgate/i, /disney(\s|$)/i, /pixar/i,
-	/apple\s+tv/i, /amazon\s+mgm/i, /rotten\s+tomatoes/i, /ign\s+movies/i,
-	/fandango/i, /kinocheck/i, /netflix/i, /\bhbo\b/i, /hulu/i, /\ba24\b/i,
+	/movieclips/i,
+	/marvel\s*(entertainment|studios)?/i,
+	/warner\s+bros/i,
+	/sony\s+pictures/i,
+	/universal\s+pictures/i,
+	/20th\s+century/i,
+	/paramount\s+pictures/i,
+	/lionsgate/i,
+	/disney(\s|$)/i,
+	/pixar/i,
+	/apple\s+tv/i,
+	/amazon\s+mgm/i,
+	/rotten\s+tomatoes/i,
+	/ign\s+movies/i,
+	/fandango/i,
+	/kinocheck/i,
+	/netflix/i,
+	/\bhbo\b/i,
+	/hulu/i,
+	/\ba24\b/i,
 	// Late-night / talk shows. Add by show name; their official YouTube
 	// uploads use these channel names exactly. Without these patterns, a
 	// 10-min Late Show clip with a "Trump: ... | When ... | Don't ..." title
 	// got misparsed as song "Trump — I Don't Think About Anybody".
-	/\blate\s+show\b/i, /\btonight\s+show\b/i, /\bdaily\s+show\b/i,
-	/\bsaturday\s+night\s+live\b/i, /\bsnl\b/i, /\blate\s+late\s+show\b/i,
-	/\bjimmy\s+(kimmel|fallon)\b/i, /\bjames\s+corden\b/i,
-	/\bconan\s+o'?brien\b/i, /\bstephen\s+colbert\b/i, /\bseth\s+meyers\b/i,
-	/\btrevor\s+noah\b/i, /\bjohn\s+oliver\b/i, /\blast\s+week\s+tonight\b/i,
+	/\blate\s+show\b/i,
+	/\btonight\s+show\b/i,
+	/\bdaily\s+show\b/i,
+	/\bsaturday\s+night\s+live\b/i,
+	/\bsnl\b/i,
+	/\blate\s+late\s+show\b/i,
+	/\bjimmy\s+(kimmel|fallon)\b/i,
+	/\bjames\s+corden\b/i,
+	/\bconan\s+o'?brien\b/i,
+	/\bstephen\s+colbert\b/i,
+	/\bseth\s+meyers\b/i,
+	/\btrevor\s+noah\b/i,
+	/\bjohn\s+oliver\b/i,
+	/\blast\s+week\s+tonight\b/i,
 	// Common non-music patterns in channel names
-	/\bgaming\b/i, /\bplays\b/i, /\bgameplay\b/i,
-	/\bpodcast\b/i, /\bnews\b/i, /\btech\b/i, /\breviews?\b/i,
+	/\bgaming\b/i,
+	/\bplays\b/i,
+	/\bgameplay\b/i,
+	/\bpodcast\b/i,
+	/\bnews\b/i,
+	/\btech\b/i,
+	/\breviews?\b/i,
 ];
 
-const WEAK_NON_MUSIC_TITLE_KEYWORDS = /\b(trailer|teaser|review|reviewing|interview|podcast|vlog|reaction|gameplay|highlights?|montage)\b/i;
+const WEAK_NON_MUSIC_TITLE_KEYWORDS =
+	/\b(trailer|teaser|review|reviewing|interview|podcast|vlog|reaction|gameplay|highlights?|montage)\b/i;
 
 // Talk-show / late-night titles almost always carry 2+ pipe separators
 // (e.g. "Trump: ... | When Does The President Sleep? | Don't Worry About
@@ -350,24 +386,32 @@ const WEAK_NON_MUSIC_TITLE_KEYWORDS = /\b(trailer|teaser|review|reviewing|interv
 const MULTI_PIPE_TITLE = /(?:\s\|\s.+){2,}/;
 
 function looksLikeNonMusicVideo(
-	title:   string | null | undefined,
+	title: string | null | undefined,
 	channel: string | null | undefined,
 ): boolean {
-	if (!title) return false;
-	if (STRONG_NON_MUSIC_TITLE_PATTERNS.some(re => re.test(title))) return true;
-	if (channel && NON_MUSIC_CHANNEL_PATTERNS.some(re => re.test(channel))) {
+	if (!title) {
+		return false;
+	}
+	if (STRONG_NON_MUSIC_TITLE_PATTERNS.some((re) => re.test(title))) {
+		return true;
+	}
+	if (channel && NON_MUSIC_CHANNEL_PATTERNS.some((re) => re.test(channel))) {
 		return WEAK_NON_MUSIC_TITLE_KEYWORDS.test(title);
 	}
 	return false;
 }
 
 function getCurrentVideoTitle(): string | null {
-	const el = (Util.queryElements(videoTitleSelector) as NodeListOf<HTMLElement>)?.[0];
+	const el = (
+		Util.queryElements(videoTitleSelector) as NodeListOf<HTMLElement>
+	)?.[0];
 	return el?.textContent?.trim() || null;
 }
 
 function getCurrentChannelName(): string | null {
-	const el = (Util.queryElements(channelNameSelector) as NodeListOf<HTMLElement>)?.[0];
+	const el = (
+		Util.queryElements(channelNameSelector) as NodeListOf<HTMLElement>
+	)?.[0];
 	return el?.textContent?.trim() || null;
 }
 
@@ -384,31 +428,45 @@ function getCurrentChannelName(): string | null {
 // fetches; controller re-reads state on later ticks, so it flips once
 // the cache fills.
 Connector.isVideo = () => {
-	const title   = getCurrentVideoTitle();
+	const title = getCurrentVideoTitle();
 	const channel = getCurrentChannelName();
-	if (looksLikeNonMusicVideo(title, channel)) return true;
+	if (looksLikeNonMusicVideo(title, channel)) {
+		return true;
+	}
 
 	const category = getVideoCategory();
-	if (category != null && category !== categoryPending && category !== categoryMusic) {
+	if (
+		category != null &&
+		category !== categoryPending &&
+		category !== categoryMusic
+	) {
 		return true;
 	}
 
 	const durationSec = getCurrentVideoDurationSec();
 	if (durationSec != null && durationSec > LONG_FORM_THRESHOLD_SEC) {
-		if (!looksLikeMusicSignal(title, channel)) return true;
+		if (!looksLikeMusicSignal(title, channel)) {
+			return true;
+		}
 	}
 
 	// Medium-form gate: 8-15 min clips need a positive music signal to
 	// be accepted. Catches talk-show / late-night clips that slip past
 	// the 15-min hard cap with titles parseable as song-like strings.
 	if (durationSec != null && durationSec > MEDIUM_FORM_THRESHOLD_SEC) {
-		if (!looksLikeMusicSignal(title, channel)) return true;
+		if (!looksLikeMusicSignal(title, channel)) {
+			return true;
+		}
 	}
 
 	// Multi-pipe title heuristic — talk-show formats almost always
 	// chain 2+ pipe-separated segments, music titles essentially never
 	// do. Treat as non-music when both signals match.
-	if (title && MULTI_PIPE_TITLE.test(title) && !looksLikeMusicSignal(title, channel)) {
+	if (
+		title &&
+		MULTI_PIPE_TITLE.test(title) &&
+		!looksLikeMusicSignal(title, channel)
+	) {
 		return true;
 	}
 
@@ -417,7 +475,9 @@ Connector.isVideo = () => {
 
 Connector.getTrackArt = () => {
 	const videoId = getVideoId();
-	return videoId ? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg` : null;
+	return videoId
+		? `https://img.youtube.com/vi/${videoId}/mqdefault.jpg`
+		: null;
 };
 
 Connector.getUniqueID = () => {
@@ -462,7 +522,9 @@ Connector.scrobblingDisallowedReason = () => {
 			// instead of polluting the music feed.
 			const category = getVideoCategory();
 			const isNonMusicCategory =
-				category != null && category !== categoryPending && category !== categoryMusic;
+				category != null &&
+				category !== categoryPending &&
+				category !== categoryMusic;
 			if (!(scrobbleNonMusicVideos && isNonMusicCategory)) {
 				return 'NotOnYouTubeMusic';
 			}
@@ -757,12 +819,14 @@ function getTrackInfoFromYoutubeMusic():
 // each as its own track and scrobble e.g. "Vicetone — Chorus" instead
 // of "Vicetone — Nevada". Falling through to the title-based getter
 // recovers the real track name.
-const SONG_SECTION_NAMES = /^(intro|pre[-\s]?intro|verse(\s*\d+)?|pre[-\s]?chorus|chorus(\s*\d+)?|hook|drop|build([-\s]?up)?|breakdown|bridge|interlude|outro|coda|refrain|ad[-\s]?lib|instrumental|solo)$/i;
+const SONG_SECTION_NAMES =
+	/^(intro|pre[-\s]?intro|verse(\s*\d+)?|pre[-\s]?chorus|chorus(\s*\d+)?|hook|drop|build([-\s]?up)?|breakdown|bridge|interlude|outro|coda|refrain|ad[-\s]?lib|instrumental|solo)$/i;
 
 // Strong positive: title contains an explicit album / live / mix / set
 // keyword. These almost always mean "this video is a compilation; each
 // chapter is its own track."
-const ALBUM_LIKE_TITLE = /(?:\bfull\s+album\b|\bthe\s+album\b|\bcomplete\s+album\b|\blive\s+(?:at|in|from|@)\b|\bconcert\b|\blive\s+(?:set|show|recording)\b|\bdj\s+set\b|\bfull\s+set\b|\bsetlist\b|\bmix(?:tape)?\b|\btracklist\b)/i;
+const ALBUM_LIKE_TITLE =
+	/(?:\bfull\s+album\b|\bthe\s+album\b|\bcomplete\s+album\b|\blive\s+(?:at|in|from|@)\b|\bconcert\b|\blive\s+(?:set|show|recording)\b|\bdj\s+set\b|\bfull\s+set\b|\bsetlist\b|\bmix(?:tape)?\b|\btracklist\b)/i;
 
 /**
  * Decide whether the video's chapters represent *separate tracks* (an
@@ -780,32 +844,48 @@ const ALBUM_LIKE_TITLE = /(?:\bfull\s+album\b|\bthe\s+album\b|\bcomplete\s+album
  * prompt + notification.
  */
 function chaptersLookLikeTracks(): boolean {
-	const title    = getCurrentVideoTitle();
-	const channel  = getCurrentChannelName();
+	const title = getCurrentVideoTitle();
+	const channel = getCurrentChannelName();
 	const duration = getCurrentVideoDurationSec();
 	const category = getVideoCategory();
 
 	// Strong NEGATIVES — bail out fast.
-	if (looksLikeNonMusicVideo(title, channel)) return false;
-	if (category != null && category !== categoryPending && category !== categoryMusic) return false;
+	if (looksLikeNonMusicVideo(title, channel)) {
+		return false;
+	}
+	if (
+		category != null &&
+		category !== categoryPending &&
+		category !== categoryMusic
+	) {
+		return false;
+	}
 
 	// Strong POSITIVES — title literally says "album" / "live" / "set" / "mix".
-	if (title && ALBUM_LIKE_TITLE.test(title)) return true;
+	if (title && ALBUM_LIKE_TITLE.test(title)) {
+		return true;
+	}
 
 	// Duration gate: an "album" or "concert" worth chaptering is
 	// almost always at least ~15 minutes. Anything shorter is much
 	// more likely to be a single song with section markers OR a
 	// regular video with navigation chapters.
-	if (duration == null || duration < 15 * 60) return false;
+	if (duration == null || duration < 15 * 60) {
+		return false;
+	}
 
 	// Long video + recognisable music channel/title pattern = album.
 	// (vevo / -topic / official music video, etc.)
-	if (looksLikeMusicSignal(title, channel)) return true;
+	if (looksLikeMusicSignal(title, channel)) {
+		return true;
+	}
 
 	// Long video + explicit YouTube "Music" category — treat as album
 	// only when we've confirmed the category fetched (categoryPending
 	// is a stub set before the fetch lands).
-	if (category === categoryMusic) return true;
+	if (category === categoryMusic) {
+		return true;
+	}
 
 	// Default: chapters are navigation markers, not separate tracks.
 	return false;

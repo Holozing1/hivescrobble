@@ -13,24 +13,30 @@
 	// and every run would otherwise add another `message` listener. With N
 	// listeners, a single hiveBroadcast triggers N requestCustomJson calls →
 	// N duplicate transactions on-chain.
-	if (window.__hive_scrobbler_relay_installed) return;
+	if (window.__hive_scrobbler_relay_installed) {
+		return;
+	}
 	window.__hive_scrobbler_relay_installed = true;
 
 	window.addEventListener('message', function (event) {
-		if (event.source !== window) return;
-		var d = event.data;
-		if (!d || !d.__hive_scrobbler) return;
+		if (event.source !== window) {
+			return;
+		}
+		const d = event.data;
+		if (!d || !d.__hive_scrobbler) {
+			return;
+		}
 
-		var kc = window.hive_keychain;
+		const kc = window.hive_keychain;
 
 		if (d.type === 'hiveConnect') {
-			var id = d.id;
+			const id = d.id;
 			if (!kc) {
 				window.postMessage(
 					{
 						__hive_scrobbler: true,
 						type: 'hiveConnectResult',
-						id: id,
+						id,
 						error: 'Hive Keychain extension not detected. Please install it.',
 					},
 					'*',
@@ -51,7 +57,7 @@
 							{
 								__hive_scrobbler: true,
 								type: 'hiveConnectResult',
-								id: id,
+								id,
 								username: response.data.username,
 							},
 							'*',
@@ -61,8 +67,10 @@
 							{
 								__hive_scrobbler: true,
 								type: 'hiveConnectResult',
-								id: id,
-								error: response.message || 'Keychain authentication failed',
+								id,
+								error:
+									response.message ||
+									'Keychain authentication failed',
 							},
 							'*',
 						);
@@ -72,9 +80,9 @@
 		}
 
 		if (d.type === 'hivePrivacySign') {
-			var psId = d.id;
-			var psUser = d.username;
-			var psChallenge = d.challenge;
+			const psId = d.id;
+			const psUser = d.username;
+			const psChallenge = d.challenge;
 			if (!kc) {
 				window.postMessage(
 					{
@@ -112,7 +120,10 @@
 								__hive_scrobbler: true,
 								type: 'hivePrivacySignResult',
 								id: psId,
-								error: response.message || response.error || 'Keychain rejected signature',
+								error:
+									response.message ||
+									response.error ||
+									'Keychain rejected signature',
 							},
 							'*',
 						);
@@ -123,8 +134,8 @@
 		}
 
 		if (d.type === 'hiveBroadcast') {
-			var reqId = d.id;
-			var p = d.payload || {};
+			const reqId = d.id;
+			const p = d.payload || {};
 			if (!kc) {
 				window.postMessage(
 					{

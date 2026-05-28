@@ -17,7 +17,9 @@ Connector.isVideo = () => true;
 
 function getMainVideoElement(): HTMLVideoElement | null {
 	const videos = Array.from(document.querySelectorAll('video'));
-	if (videos.length === 0) return null;
+	if (videos.length === 0) {
+		return null;
+	}
 	return videos.reduce((biggest, candidate) =>
 		candidate.duration > (biggest.duration || 0) ? candidate : biggest,
 	);
@@ -55,9 +57,12 @@ interface ParsedSubtitle {
 }
 
 function parseSubtitle(subtitle: string | null): ParsedSubtitle {
-	if (!subtitle) return { season: null, episode: null, episodeTitle: null };
-	const verbose =
-		/Season\s+(\d+)[,\s]+Episode\s+(\d+)[,\s:.\-]+(.*)$/i.exec(subtitle);
+	if (!subtitle) {
+		return { season: null, episode: null, episodeTitle: null };
+	}
+	const verbose = /Season\s+(\d+)[,\s]+Episode\s+(\d+)[,\s:.-]+(.*)$/i.exec(
+		subtitle,
+	);
 	if (verbose) {
 		return {
 			season: parseInt(verbose[1], 10),
@@ -65,7 +70,9 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 			episodeTitle: verbose[3].trim() || null,
 		};
 	}
-	const concise = /S(\d+)\s*[:.\-]?\s*E(\d+)\s*[·:.\-]?\s*(.*)$/i.exec(subtitle);
+	const concise = /S(\d+)\s*[:.-]?\s*E(\d+)\s*[·:.-]?\s*(.*)$/i.exec(
+		subtitle,
+	);
 	if (concise) {
 		return {
 			season: parseInt(concise[1], 10),
@@ -78,7 +85,9 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 
 function isEpisode(): boolean {
 	const { subtitle } = getTitleParts();
-	if (!subtitle) return false;
+	if (!subtitle) {
+		return false;
+	}
 	return /S\d+|Season\s+\d+|Episode\s+\d+/i.test(subtitle);
 }
 
@@ -87,7 +96,9 @@ Connector.getVideoKind = () => (isEpisode() ? 'episode' : 'movie');
 Connector.getTrack = () => {
 	if (isEpisode()) {
 		const parsed = parseSubtitle(getTitleParts().subtitle);
-		if (parsed.episodeTitle) return parsed.episodeTitle;
+		if (parsed.episodeTitle) {
+			return parsed.episodeTitle;
+		}
 	}
 	return getTitleParts().title;
 };
@@ -122,6 +133,8 @@ Connector.isPlaying = () => {
 Connector.getOriginUrl = () => window.location.href;
 
 Connector.getUniqueID = () => {
-	const match = /\/video\/(?:watch|play)\/([a-zA-Z0-9-]+)/.exec(window.location.pathname);
+	const match = /\/video\/(?:watch|play)\/([a-zA-Z0-9-]+)/.exec(
+		window.location.pathname,
+	);
 	return match?.[1] ?? null;
 };

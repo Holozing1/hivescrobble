@@ -16,17 +16,10 @@ import type { ManagerTab } from '@/core/storage/wrapper';
 import browser from 'webextension-polyfill';
 import ClonedSong from '@/core/object/cloned-song';
 import Base from './base';
-import {
-	BlockOutlined,
-	FavoriteOutlined,
-	RestartAltOutlined,
-} from '@/ui/components/icons';
+import { BlockOutlined, RestartAltOutlined } from '@/ui/components/icons';
 import { sendBackgroundMessage } from '@/util/communication';
 import * as ControllerMode from '@/core/object/controller/controller-mode';
 import EditComponent from './edit';
-import {
-} from '@/util/util';
-import scrobbleService from '@/core/object/scrobble-service';
 import { PopupAnchor, Squircle, isIos } from '../components/util';
 import ContextMenu from '../components/context-menu/context-menu';
 import type { Navigator } from '../options/components/navigator';
@@ -204,30 +197,6 @@ function SongDetails(props: {
 }
 
 /**
- * Component containing the button for loving track on iOS
- */
-function IOSLoveTrack(props: {
-	tab: Resource<ManagerTab>;
-	song: Accessor<ClonedSong | null>;
-}) {
-	return (
-		<button
-			class={`${styles.iosLoveButton}${
-				props.song()?.metadata.userloved ? ` ${styles.active}` : ''
-			}`}
-			onClick={() => toggleLove(props.tab, props.song)}
-			title={
-				props.song()?.metadata.userloved
-					? t('infoUnlove')
-					: t('infoLove')
-			}
-		>
-			<FavoriteOutlined />
-		</button>
-	);
-}
-
-/**
  * The component showing the track data.
  */
 function TrackData(props: { song: Accessor<ClonedSong | null> }) {
@@ -365,23 +334,5 @@ function actionResetSongData(tab: Resource<ManagerTab>) {
 	sendBackgroundMessage(tab()?.tabId ?? -1, {
 		type: 'resetData',
 		payload: undefined,
-	});
-}
-
-/**
- * Love current song
- * @param tab - currently active tab
- * @param song - currently playing song
- */
-function toggleLove(
-	tab: Resource<ManagerTab>,
-	song: Accessor<ClonedSong | null>,
-) {
-	sendBackgroundMessage(tab()?.tabId ?? -1, {
-		type: 'toggleLove',
-		payload: {
-			isLoved: !song()?.metadata.userloved,
-			shouldShowNotification: false,
-		},
 	});
 }

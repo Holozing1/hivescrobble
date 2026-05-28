@@ -43,19 +43,32 @@ function isSupportedRoute(): boolean {
 /** Parse `?v=author/permlink` from the current URL. Works for both
  *  /watch?v=... and /embed?v=... since both paths carry the same param.
  *  Returns null on unsupported routes (notably /shorts). */
-function getVideoRef(): { author: string; permlink: string; raw: string } | null {
-	if (!isSupportedRoute()) return null;
+function getVideoRef(): {
+	author: string;
+	permlink: string;
+	raw: string;
+} | null {
+	if (!isSupportedRoute()) {
+		return null;
+	}
 	const params = new URLSearchParams(window.location.search);
 	const v = params.get('v');
-	if (!v) return null;
+	if (!v) {
+		return null;
+	}
 	const [author, permlink] = v.split('/', 2);
-	if (!author || !permlink) return null;
+	if (!author || !permlink) {
+		return null;
+	}
 	return { author, permlink, raw: v };
 }
 
 /** Fetch the Hive post for the given author/permlink. Tries each RPC
  *  node in turn, returns null on total failure. */
-async function fetchHivePost(author: string, permlink: string): Promise<VideoMeta | null> {
+async function fetchHivePost(
+	author: string,
+	permlink: string,
+): Promise<VideoMeta | null> {
 	for (const node of HIVE_NODES) {
 		try {
 			const res = await fetch(node, {
@@ -63,17 +76,21 @@ async function fetchHivePost(author: string, permlink: string): Promise<VideoMet
 				headers: { 'content-type': 'application/json' },
 				body: JSON.stringify({
 					jsonrpc: '2.0',
-					method:  'condenser_api.get_content',
-					params:  [author, permlink],
-					id:      1,
+					method: 'condenser_api.get_content',
+					params: [author, permlink],
+					id: 1,
 				}),
 			});
-			if (!res.ok) continue;
+			if (!res.ok) {
+				continue;
+			}
 			const data = await res.json();
 			const post = data?.result;
-			if (!post || !post.author) continue;
+			if (!post || !post.author) {
+				continue;
+			}
 			return {
-				title:  String(post.title ?? '').trim(),
+				title: String(post.title ?? '').trim(),
 				author: post.author,
 			};
 		} catch {
@@ -93,9 +110,11 @@ async function refreshMetadataIfNeeded() {
 		lastFetchedRef = null;
 		return;
 	}
-	if (lastFetchedRef === ref.raw && videoMeta) return;
+	if (lastFetchedRef === ref.raw && videoMeta) {
+		return;
+	}
 	lastFetchedRef = ref.raw;
-	videoMeta = null;          // clear stale until new fetch returns
+	videoMeta = null; // clear stale until new fetch returns
 	const fresh = await fetchHivePost(ref.author, ref.permlink);
 	// Only adopt the result if the URL hasn't moved on while we were waiting.
 	if (lastFetchedRef === ref.raw) {
@@ -125,7 +144,9 @@ Connector.getTrack = () => {
 	// Pull from cached Hive metadata when available. URL fallback uses
 	// the permlink slug, which is hyphenated and ugly but better than
 	// no title at all (e.g. while the chain fetch is in flight).
-	if (videoMeta?.title) return videoMeta.title;
+	if (videoMeta?.title) {
+		return videoMeta.title;
+	}
 	return getVideoRef()?.permlink ?? null;
 };
 
@@ -149,7 +170,9 @@ Connector.getDuration = () => {
 
 Connector.isPlaying = () => {
 	const v = document.querySelector(videoSelector) as HTMLVideoElement | null;
-	if (!v) return false;
+	if (!v) {
+		return false;
+	}
 	return !v.paused && !v.ended;
 };
 
@@ -171,11 +194,13 @@ Connector.isVideo = () => true;
 let videoElementHooked: HTMLVideoElement | null = null;
 function ensureVideoHooks() {
 	const v = document.querySelector(videoSelector) as HTMLVideoElement | null;
-	if (!v || v === videoElementHooked) return;
+	if (!v || v === videoElementHooked) {
+		return;
+	}
 	videoElementHooked = v;
-	v.addEventListener('play',       () => Connector.onStateChanged());
-	v.addEventListener('pause',      () => Connector.onStateChanged());
-	v.addEventListener('ended',      () => Connector.onStateChanged());
+	v.addEventListener('play', () => Connector.onStateChanged());
+	v.addEventListener('pause', () => Connector.onStateChanged());
+	v.addEventListener('ended', () => Connector.onStateChanged());
 	v.addEventListener('timeupdate', () => Connector.onStateChanged());
 }
 // Re-check periodically until the SPA renders the player.

@@ -149,7 +149,9 @@ async function onTabRemoved(tabId: number) {
 	// using any other open tab as the Keychain broadcast channel.
 	const hpfKey = `hpf_${tabId}`;
 	const stored = await browser.storage.session.get(hpfKey);
-	const pending = stored[hpfKey] as { song: CloneableSong; playSeconds: number } | undefined;
+	const pending = stored[hpfKey] as
+		| { song: CloneableSong; playSeconds: number }
+		| undefined;
 	if (pending) {
 		await browser.storage.session.remove(hpfKey);
 		await finalizePending(pending);
@@ -199,7 +201,9 @@ async function sweepOrphanedPendingFinalizes(): Promise<void> {
 		} catch {
 			tabAlive = false;
 		}
-		if (tabAlive) continue;
+		if (tabAlive) {
+			continue;
+		}
 
 		const pending = session[key] as
 			| { song: CloneableSong; playSeconds: number }

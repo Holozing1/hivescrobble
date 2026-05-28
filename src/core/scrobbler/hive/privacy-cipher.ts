@@ -20,30 +20,48 @@
  * a versioned decrypt path for older blobs.
  */
 
-const IV_BYTES = 12;   // GCM standard
+const IV_BYTES = 12; // GCM standard
 
-export async function encrypt(payload: object, secret: ArrayBuffer): Promise<string> {
-	const iv  = crypto.getRandomValues(new Uint8Array(IV_BYTES));
-	const key = await crypto.subtle.importKey('raw', secret, 'AES-GCM', false, ['encrypt']);
+export async function encrypt(
+	payload: object,
+	secret: ArrayBuffer,
+): Promise<string> {
+	const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
+	const key = await crypto.subtle.importKey('raw', secret, 'AES-GCM', false, [
+		'encrypt',
+	]);
 	const data = new TextEncoder().encode(JSON.stringify(payload));
-	const cipher = await crypto.subtle.encrypt({ name: 'AES-GCM', iv }, key, data);
+	const cipher = await crypto.subtle.encrypt(
+		{ name: 'AES-GCM', iv },
+		key,
+		data,
+	);
 	const out = new Uint8Array(IV_BYTES + cipher.byteLength);
 	out.set(iv, 0);
 	out.set(new Uint8Array(cipher), IV_BYTES);
 	return bufferToBase64(out);
 }
 
-export async function decrypt(blob: string, secret: ArrayBuffer): Promise<unknown> {
+export async function decrypt(
+	blob: string,
+	secret: ArrayBuffer,
+): Promise<unknown> {
 	const all = base64ToBuffer(blob);
 	if (all.byteLength < IV_BYTES + 16) {
 		throw new Error('blob too short for IV + GCM auth tag');
 	}
-	const iv     = all.slice(0, IV_BYTES);
+	const iv = all.slice(0, IV_BYTES);
 	const cipher = all.slice(IV_BYTES);
-	const key    = await crypto.subtle.importKey('raw', secret, 'AES-GCM', false, ['decrypt']);
+	const key = await crypto.subtle.importKey('raw', secret, 'AES-GCM', false, [
+		'decrypt',
+	]);
 	let plain: ArrayBuffer;
 	try {
-		plain = await crypto.subtle.decrypt({ name: 'AES-GCM', iv }, key, cipher);
+		plain = await crypto.subtle.decrypt(
+			{ name: 'AES-GCM', iv },
+			key,
+			cipher,
+		);
 	} catch {
 		// AES-GCM auth-tag mismatch — wrong key, tampered ciphertext, or
 		// blob from a different format version. Throw a uniform error so
@@ -59,13 +77,17 @@ export async function decrypt(blob: string, secret: ArrayBuffer): Promise<unknow
 
 function bufferToBase64(buf: Uint8Array): string {
 	let s = '';
-	for (let i = 0; i < buf.length; i++) s += String.fromCharCode(buf[i]);
+	for (let i = 0; i < buf.length; i++) {
+		s += String.fromCharCode(buf[i]);
+	}
 	return btoa(s);
 }
 
 function base64ToBuffer(b64: string): ArrayBuffer {
 	const s = atob(b64);
 	const out = new Uint8Array(s.length);
-	for (let i = 0; i < s.length; i++) out[i] = s.charCodeAt(i);
+	for (let i = 0; i < s.length; i++) {
+		out[i] = s.charCodeAt(i);
+	}
 	return out.buffer;
 }

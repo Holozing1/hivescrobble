@@ -84,11 +84,17 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			const cutoff = Math.floor(Date.now() / 1000) - 6 * 3600;
 			const toRemove: string[] = [];
 			for (const k of Object.keys(all)) {
-				if (!k.startsWith('finalized_')) continue;
+				if (!k.startsWith('finalized_')) {
+					continue;
+				}
 				const ts = parseInt(k.slice('finalized_'.length), 10);
-				if (!isNaN(ts) && ts < cutoff) toRemove.push(k);
+				if (!isNaN(ts) && ts < cutoff) {
+					toRemove.push(k);
+				}
 			}
-			if (toRemove.length) await browser.storage.session.remove(toRemove);
+			if (toRemove.length) {
+				await browser.storage.session.remove(toRemove);
+			}
 		} catch {
 			// Pruning is best-effort; never let it break a scrobble.
 		}
@@ -135,7 +141,10 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	}
 
 	/** @override */
-	public toggleLove(_song: ClonedSong, _isLoved: boolean): Promise<ServiceCallResult> {
+	public toggleLove(
+		_song: ClonedSong,
+		_isLoved: boolean,
+	): Promise<ServiceCallResult> {
 		return Promise.resolve(ServiceCallResult.ERROR_OTHER);
 	}
 
@@ -163,7 +172,9 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	}
 
 	/** @override */
-	public async sendResumedPlaying(_song: BaseSong): Promise<ServiceCallResult> {
+	public async sendResumedPlaying(
+		_song: BaseSong,
+	): Promise<ServiceCallResult> {
 		return Promise.resolve(ServiceCallResult.RESULT_OK);
 	}
 
@@ -173,7 +184,10 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	}
 
 	/** @override */
-	public async scrobble(songs: BaseSong[], _currentlyPlaying: boolean): Promise<ServiceCallResult[]> {
+	public async scrobble(
+		songs: BaseSong[],
+		_currentlyPlaying: boolean,
+	): Promise<ServiceCallResult[]> {
 		// Actual broadcast is deferred to finalize(), called when the song ends.
 		return songs.slice(0, 50).map(() => ServiceCallResult.RESULT_OK);
 	}
@@ -187,13 +201,19 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	 * standard for "watched". Below the threshold we don't broadcast at all.
 	 * Double-watch in a single playback session isn't a real thing for video.
 	 */
-	public async finalize(playSeconds: number, song: ClonedSong): Promise<void> {
+	public async finalize(
+		playSeconds: number,
+		song: ClonedSong,
+	): Promise<void> {
 		const key = song.metadata.startTimestamp;
 		const isLongForm =
-			song.parsed.videoKind === 'movie' || song.parsed.videoKind === 'episode';
+			song.parsed.videoKind === 'movie' ||
+			song.parsed.videoKind === 'episode';
 
 		// Synchronous in-memory claim — prevents race within the same SW lifecycle.
-		if (HiveScrobbler.lockedKeys.has(key)) return;
+		if (HiveScrobbler.lockedKeys.has(key)) {
+			return;
+		}
 		HiveScrobbler.lockedKeys.add(key);
 
 		// Once-per-SW-lifetime sweep of stale dedup entries.
@@ -207,13 +227,17 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 
 		if (isLongForm) {
 			// Threshold gate — don't broadcast unwatched / abandoned views.
-			if (progress < 0.8) return;
+			if (progress < 0.8) {
+				return;
+			}
 
 			// Content-keyed dedup so two playbacks of the same movie within
 			// the same hour can't both broadcast. Hour-bucketed so legitimate
 			// same-day rewatches (>1h apart) still count.
 			const contentKey = this.contentDedupKey(song);
-			if (await this.isFinalized(contentKey)) return;
+			if (await this.isFinalized(contentKey)) {
+				return;
+			}
 			await this.markFinalized(contentKey);
 
 			const percentPlayed = Math.min(100, Math.round(progress * 100));
@@ -222,15 +246,21 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 		}
 
 		// Music branch — original behaviour preserved.
-		if (await this.isFinalized(key)) return;
+		if (await this.isFinalized(key)) {
+			return;
+		}
 		await this.markFinalized(key);
 
-		const txCount = Math.min(2, duration > 0 ? 1 + Math.floor(Math.max(0, progress - 0.6)) : 1);
+		const txCount = Math.min(
+			2,
+			duration > 0 ? 1 + Math.floor(Math.max(0, progress - 0.6)) : 1,
+		);
 
 		for (let i = 0; i < txCount; i++) {
-			const percentPlayed = duration > 0
-				? Math.min(100, Math.round((progress - i) * 100))
-				: 0;
+			const percentPlayed =
+				duration > 0
+					? Math.min(100, Math.round((progress - i) * 100))
+					: 0;
 			void this.broadcastScrobble(song, false, percentPlayed);
 		}
 	}
@@ -326,38 +356,44 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 	 * Remove once Tier B privacy mode ships.
 	 */
 	public async testPrivacySecret(tabId: number): Promise<{
-		hexPreview:  string;
-		cached:      boolean;
-		blobLength:  number;
+		hexPreview: string;
+		cached: boolean;
+		blobLength: number;
 		blobPreview: string;
 		roundTripOk: boolean;
 	}> {
 		const { sessionID } = await this.getSession();
 		const cachedFirst = await PrivacySecret.getCached(sessionID);
-		const secret = cachedFirst ?? await PrivacySecret.getOrDerive(sessionID, tabId);
+		const secret =
+			cachedFirst ?? (await PrivacySecret.getOrDerive(sessionID, tabId));
 
 		const sampleSecret = new Uint8Array(secret);
 		let hex = '';
-		for (let i = 0; i < sampleSecret.length; i++) hex += sampleSecret[i].toString(16).padStart(2, '0');
+		for (let i = 0; i < sampleSecret.length; i++) {
+			hex += sampleSecret[i].toString(16).padStart(2, '0');
+		}
 
 		// Encrypt → decrypt a known payload and verify equality.
 		const samplePayload = {
-			artist:    'Empire of the Sun',
-			title:     'We Are the People',
+			artist: 'Empire of the Sun',
+			title: 'We Are the People',
 			timestamp: new Date().toISOString(),
 		};
 		const blob = await PrivacyCipher.encrypt(samplePayload, secret);
-		const decoded = await PrivacyCipher.decrypt(blob, secret) as typeof samplePayload;
+		const decoded = (await PrivacyCipher.decrypt(
+			blob,
+			secret,
+		)) as typeof samplePayload;
 		const roundTripOk =
-			decoded.artist    === samplePayload.artist &&
-			decoded.title     === samplePayload.title &&
+			decoded.artist === samplePayload.artist &&
+			decoded.title === samplePayload.title &&
 			decoded.timestamp === samplePayload.timestamp;
 
 		return {
-			hexPreview:  hex.slice(0, 16) + '…',
-			cached:      cachedFirst !== null,
-			blobLength:  blob.length,
-			blobPreview: blob.slice(0, 24) + '…',
+			hexPreview: `${hex.slice(0, 16)}…`,
+			cached: cachedFirst !== null,
+			blobLength: blob.length,
+			blobPreview: `${blob.slice(0, 24)}…`,
 			roundTripOk,
 		};
 	}
@@ -415,7 +451,9 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			app: APP_NAME,
 			kind,
 			title: song.getTrack() ?? '',
-			timestamp: new Date(song.metadata.startTimestamp * 1000).toISOString(),
+			timestamp: new Date(
+				song.metadata.startTimestamp * 1000,
+			).toISOString(),
 		};
 
 		if (isLongForm) {
@@ -425,17 +463,36 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			// (so the popup renders it inline) and as `poster_url` on the
 			// broadcast payload (so feed cards on zingit-web can render
 			// without extra fetches).
-			if (song.parsed.wikipediaUrl) payload.wikipedia_url = song.parsed.wikipediaUrl;
-			if (song.parsed.imdbId) payload.imdb_id = song.parsed.imdbId;
-			if (song.parsed.year) payload.year = song.parsed.year;
+			if (song.parsed.wikipediaUrl) {
+				payload.wikipedia_url = song.parsed.wikipediaUrl;
+			}
+			if (song.parsed.imdbId) {
+				payload.imdb_id = song.parsed.imdbId;
+			}
+			if (song.parsed.year) {
+				payload.year = song.parsed.year;
+			}
 			const poster = song.parsed.trackArt ?? song.metadata.trackArtUrl;
-			if (poster) payload.poster_url = poster;
+			if (poster) {
+				payload.poster_url = poster;
+			}
 			if (kind === 'episode') {
-				if (song.parsed.season) payload.season = song.parsed.season;
-				if (song.parsed.episode) payload.episode_number = song.parsed.episode;
-				if (song.parsed.seriesTitle) payload.series_title = song.parsed.seriesTitle;
-				if (song.parsed.seriesWikipediaUrl) payload.series_wikipedia_url = song.parsed.seriesWikipediaUrl;
-				if (song.parsed.seriesImdbId) payload.series_imdb_id = song.parsed.seriesImdbId;
+				if (song.parsed.season) {
+					payload.season = song.parsed.season;
+				}
+				if (song.parsed.episode) {
+					payload.episode_number = song.parsed.episode;
+				}
+				if (song.parsed.seriesTitle) {
+					payload.series_title = song.parsed.seriesTitle;
+				}
+				if (song.parsed.seriesWikipediaUrl) {
+					payload.series_wikipedia_url =
+						song.parsed.seriesWikipediaUrl;
+				}
+				if (song.parsed.seriesImdbId) {
+					payload.series_imdb_id = song.parsed.seriesImdbId;
+				}
 			}
 		} else {
 			// Music-side fields.
@@ -484,13 +541,20 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 		// `app`/`kind`/`timestamp` plaintext (chain observers see "@user
 		// scrobbled something of kind=song at HH:MM") and stuffs everything
 		// else into an AES-GCM blob only the user can decrypt.
-		const broadcastPayload = await this.maybeEncryptPayload(username, kind, payload);
+		const broadcastPayload = await this.maybeEncryptPayload(
+			username,
+			kind,
+			payload,
+		);
 		if (broadcastPayload === null) {
 			// Privacy mode requested but no cached secret available — refuse
 			// to broadcast in plaintext (privacy violation) and refuse to
 			// prompt mid-listen (would interrupt the user). Skip silently;
 			// the next scrobble after they re-toggle privacy will catch up.
-			this.debugLog('Privacy mode on but no cached secret — skipping broadcast', 'warn');
+			this.debugLog(
+				'Privacy mode on but no cached secret — skipping broadcast',
+				'warn',
+			);
 			return ServiceCallResult.ERROR_OTHER;
 		}
 
@@ -507,10 +571,15 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 					json: JSON.stringify(broadcastPayload),
 					displayMsg,
 				},
-			}).catch(() => {/* channel closed before response — tx still broadcasts */});
+			}).catch(() => {
+				/* channel closed before response — tx still broadcasts */
+			});
 			return ServiceCallResult.RESULT_OK;
 		} catch {
-			this.debugLog('Failed to broadcast custom_json via Keychain', 'error');
+			this.debugLog(
+				'Failed to broadcast custom_json via Keychain',
+				'error',
+			);
 			return ServiceCallResult.ERROR_OTHER;
 		}
 	}
@@ -533,15 +602,27 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 		payload: HiveScrobblePayload & { now_playing?: boolean },
 	): Promise<object | null> {
 		const flag = privacyFlagForKind(kind);
-		const opts = await BrowserStorage.getStorage(BrowserStorage.OPTIONS).get() as GlobalOptions | null;
+		const opts = (await BrowserStorage.getStorage(
+			BrowserStorage.OPTIONS,
+		).get()) as GlobalOptions | null;
 		const enabled = !!(opts && opts[flag]);
-		if (!enabled) return payload;
+		if (!enabled) {
+			return payload;
+		}
 
 		const secret = await PrivacySecret.getCached(username);
-		if (!secret) return null;
+		if (!secret) {
+			return null;
+		}
 
 		// Pull out the fields that stay public; encrypt everything else.
-		const { app, kind: payloadKind, timestamp, now_playing, ...privateFields } = payload;
+		const {
+			app,
+			kind: payloadKind,
+			timestamp,
+			now_playing: nowPlaying,
+			...privateFields
+		} = payload;
 		const blob = await PrivacyCipher.encrypt(privateFields, secret);
 
 		const envelope: Record<string, unknown> = {
@@ -551,7 +632,9 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			private: blob,
 			v: 1,
 		};
-		if (now_playing) envelope.now_playing = true;
+		if (nowPlaying) {
+			envelope.now_playing = true;
+		}
 		return envelope;
 	}
 }

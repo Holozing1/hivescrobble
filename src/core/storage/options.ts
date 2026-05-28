@@ -37,10 +37,10 @@ export const ALBUM_GUESSING_ALL_TRACKS = 'albumGuessingAllTracks';
 //   - VIDEOS covers non-music YouTube auto-scrobbles (vlogs, news, comedy)
 //   - MOVIES_TV covers Netflix, Disney+, Max, Prime Video, manual entries
 // Different sources, different sensitivity profiles.
-export const HIVE_PRIVACY_MUSIC     = 'hivePrivacyMusic';
-export const HIVE_PRIVACY_VIDEOS    = 'hivePrivacyVideos';
+export const HIVE_PRIVACY_MUSIC = 'hivePrivacyMusic';
+export const HIVE_PRIVACY_VIDEOS = 'hivePrivacyVideos';
 export const HIVE_PRIVACY_MOVIES_TV = 'hivePrivacyMoviesTv';
-export const HIVE_PRIVACY_PODCASTS  = 'hivePrivacyPodcasts';
+export const HIVE_PRIVACY_PODCASTS = 'hivePrivacyPodcasts';
 
 export interface GlobalOptions {
 	/**
@@ -188,9 +188,9 @@ const DEFAULT_CONNECTOR_OPTIONS: ConnectorOptions = {
 	YouTube: {
 		scrobbleMusicOnly: false,
 		scrobbleEntertainmentOnly: false,
-		scrobbleMusicRecognisedOnly: true,  // always on — only scrobble what YT Music recognises
+		scrobbleMusicRecognisedOnly: true, // always on — only scrobble what YT Music recognises
 		enableGetTrackInfoFromYtMusic: true, // always on — use YT Music for better track info
-		scrobbleNonMusicVideos: true,        // route non-music YT videos to kind=video by default
+		scrobbleNonMusicVideos: true, // route non-music YT videos to kind=video by default
 	},
 };
 

@@ -105,7 +105,10 @@ function announcePresence(): void {
 		// Manifest unreachable in some odd contexts — leave version blank.
 	}
 	try {
-		document.documentElement.setAttribute('data-hobbles-installed', version || '1');
+		document.documentElement.setAttribute(
+			'data-hobbles-installed',
+			version || '1',
+		);
 		document.dispatchEvent(
 			new CustomEvent('hobbles:present', { detail: { version } }),
 		);
@@ -115,7 +118,9 @@ function announcePresence(): void {
 }
 
 export function setupZingitAuthSync(): void {
-	if (!isAllowedHost()) return;
+	if (!isAllowedHost()) {
+		return;
+	}
 
 	// Presence marker — runs first so the website can detect us even
 	// before any auth sync has happened.
@@ -128,21 +133,35 @@ export function setupZingitAuthSync(): void {
 	// Re-announce when our session changes (e.g. user connected from
 	// the extension's options page in another tab).
 	browser.storage.onChanged.addListener((changes, area) => {
-		if (area !== 'local' || !('Hive' in changes)) return;
-		const next = changes.Hive.newValue as { sessionID?: string } | undefined;
+		if (area !== 'local' || !('Hive' in changes)) {
+			return;
+		}
+		const next = changes.Hive.newValue as
+			| { sessionID?: string }
+			| undefined;
 		announce(next?.sessionID ?? null);
 	});
 
 	// Adopt usernames Zingit announces after a website-side connect.
 	window.addEventListener('message', (event) => {
-		if (event.source !== window) return;
-		if (event.origin !== window.location.origin) return;
+		if (event.source !== window) {
+			return;
+		}
+		if (event.origin !== window.location.origin) {
+			return;
+		}
 		const d = event.data as Partial<AuthSyncMessage> | undefined;
-		if (!d || d.__auth_sync !== true || d.source !== 'website') return;
+		if (!d || d.__auth_sync !== true || d.source !== 'website') {
+			return;
+		}
 		// Login propagation only — see module header for rationale.
-		if (typeof d.username !== 'string' || !d.username) return;
+		if (typeof d.username !== 'string' || !d.username) {
+			return;
+		}
 		void getStoredUsername().then((current) => {
-			if (current === d.username) return;
+			if (current === d.username) {
+				return;
+			}
 			void setStoredUsername(d.username!);
 		});
 	});

@@ -36,9 +36,15 @@ const REQUEST_TIMEOUT = 8000;
 
 export async function process(song: Song): Promise<void> {
 	const parsed = song.parsed;
-	if (!parsed.isVideo || !parsed.videoKind) return;
-	if (parsed.wikipediaUrl) return; // already resolved
-	if (song.isEmpty?.()) return;
+	if (!parsed.isVideo || !parsed.videoKind) {
+		return;
+	}
+	if (parsed.wikipediaUrl) {
+		return;
+	} // already resolved
+	if (song.isEmpty?.()) {
+		return;
+	}
 
 	try {
 		if (parsed.videoKind === 'movie') {
@@ -47,63 +53,94 @@ export async function process(song: Song): Promise<void> {
 			await resolveEpisode(song);
 		}
 	} catch (err) {
-		debugLog(`Wikipedia resolution failed: ${(err as Error).message}`, 'warn');
+		debugLog(
+			`Wikipedia resolution failed: ${(err as Error).message}`,
+			'warn',
+		);
 	}
 }
 
 async function resolveMovie(song: Song): Promise<void> {
 	const title = song.parsed.track;
-	if (!title) return;
+	if (!title) {
+		return;
+	}
 
-	const candidates = await timeoutPromise(REQUEST_TIMEOUT, searchCandidates('movie', title));
-	if (!candidates || candidates.length === 0) return;
+	const candidates = await timeoutPromise(
+		REQUEST_TIMEOUT,
+		searchCandidates('movie', title),
+	);
+	if (!candidates || candidates.length === 0) {
+		return;
+	}
 
 	// Prefer year-matching candidate when the connector had a year.
 	const wantedYear = song.parsed.year ?? undefined;
-	const picked = (wantedYear
-		? candidates.find((c) => c.year === wantedYear)
-		: undefined) ?? candidates[0];
+	const picked =
+		(wantedYear
+			? candidates.find((c) => c.year === wantedYear)
+			: undefined) ?? candidates[0];
 
-	const summary = await timeoutPromise(REQUEST_TIMEOUT, getSummary(picked.title));
-	if (!summary) return;
+	const summary = await timeoutPromise(
+		REQUEST_TIMEOUT,
+		getSummary(picked.title),
+	);
+	if (!summary) {
+		return;
+	}
 
 	song.parsed.wikipediaUrl = summary.url;
 	if (!song.parsed.year && summary.year) {
 		song.parsed.year = summary.year;
 	}
 	if (!song.parsed.trackArt) {
-		song.parsed.trackArt = summary.originalImageUrl ?? summary.thumbnailUrl ?? null;
+		song.parsed.trackArt =
+			summary.originalImageUrl ?? summary.thumbnailUrl ?? null;
 	}
 
 	// IMDb cross-ref via Wikidata — best-effort, fire-and-forget.
 	const imdb = await timeoutPromise(REQUEST_TIMEOUT, getImdbId(picked.title));
-	if (imdb) song.parsed.imdbId = imdb;
+	if (imdb) {
+		song.parsed.imdbId = imdb;
+	}
 }
 
 async function resolveEpisode(song: Song): Promise<void> {
 	const seriesTitle = song.parsed.seriesTitle ?? song.parsed.artist;
-	if (!seriesTitle) return;
+	if (!seriesTitle) {
+		return;
+	}
 
 	const candidates = await timeoutPromise(
 		REQUEST_TIMEOUT,
 		searchCandidates('episode', seriesTitle),
 	);
-	if (!candidates || candidates.length === 0) return;
+	if (!candidates || candidates.length === 0) {
+		return;
+	}
 
 	const picked = candidates[0];
-	const summary = await timeoutPromise(REQUEST_TIMEOUT, getSummary(picked.title));
-	if (!summary) return;
+	const summary = await timeoutPromise(
+		REQUEST_TIMEOUT,
+		getSummary(picked.title),
+	);
+	if (!summary) {
+		return;
+	}
 
 	song.parsed.seriesWikipediaUrl = summary.url;
 	if (!song.parsed.year && summary.year) {
 		song.parsed.year = summary.year;
 	}
 	if (!song.parsed.trackArt) {
-		song.parsed.trackArt = summary.originalImageUrl ?? summary.thumbnailUrl ?? null;
+		song.parsed.trackArt =
+			summary.originalImageUrl ?? summary.thumbnailUrl ?? null;
 	}
 
 	const imdb = await timeoutPromise(REQUEST_TIMEOUT, getImdbId(picked.title));
-	if (imdb) song.parsed.seriesImdbId = imdb;
+	if (imdb) {
+		song.parsed.seriesImdbId = imdb;
+	}
 
 	// Wikipedia doesn't have a structured per-episode lookup the way TMDB
 	// did. The connector's parsed season/episode numbers are kept on the

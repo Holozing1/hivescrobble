@@ -12,7 +12,8 @@
 
 export {};
 
-Connector.playerSelector = '[data-testid="player"], .btm-media-overlays-container, video';
+Connector.playerSelector =
+	'[data-testid="player"], .btm-media-overlays-container, video';
 
 Connector.isVideo = () => true;
 
@@ -31,7 +32,9 @@ const SUBTITLE_SELECTORS = [
 
 function getMainVideoElement(): HTMLVideoElement | null {
 	const videos = Array.from(document.querySelectorAll('video'));
-	if (videos.length === 0) return null;
+	if (videos.length === 0) {
+		return null;
+	}
 	return videos.reduce((biggest, candidate) =>
 		candidate.duration > (biggest.duration || 0) ? candidate : biggest,
 	);
@@ -41,7 +44,9 @@ function findText(selectors: string[]): string | null {
 	for (const sel of selectors) {
 		const el = document.querySelector(sel) as HTMLElement | null;
 		const text = el?.textContent?.trim();
-		if (text) return text;
+		if (text) {
+			return text;
+		}
 	}
 	return null;
 }
@@ -53,9 +58,11 @@ interface ParsedSubtitle {
 }
 
 function parseSubtitle(subtitle: string | null): ParsedSubtitle {
-	if (!subtitle) return { season: null, episode: null, episodeTitle: null };
+	if (!subtitle) {
+		return { season: null, episode: null, episodeTitle: null };
+	}
 	// Examples observed: "S1: E3 The Pilot", "Season 1 · Episode 3 · The Pilot"
-	const concise = /S(\d+)\s*[:.]?\s*E(\d+)\s*[·:.\-]?\s*(.*)$/i.exec(subtitle);
+	const concise = /S(\d+)\s*[:.]?\s*E(\d+)\s*[·:.-]?\s*(.*)$/i.exec(subtitle);
 	if (concise) {
 		return {
 			season: parseInt(concise[1], 10),
@@ -63,7 +70,9 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 			episodeTitle: concise[3].trim() || null,
 		};
 	}
-	const verbose = /Season\s+(\d+).*Episode\s+(\d+)\s*[·:.\-]?\s*(.*)$/i.exec(subtitle);
+	const verbose = /Season\s+(\d+).*Episode\s+(\d+)\s*[·:.-]?\s*(.*)$/i.exec(
+		subtitle,
+	);
 	if (verbose) {
 		return {
 			season: parseInt(verbose[1], 10),
@@ -76,7 +85,9 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 
 function isEpisode(): boolean {
 	const sub = findText(SUBTITLE_SELECTORS);
-	if (!sub) return false;
+	if (!sub) {
+		return false;
+	}
 	return /S\d+|Season\s+\d+|Episode\s+\d+/i.test(sub);
 }
 
@@ -85,17 +96,21 @@ Connector.getVideoKind = () => (isEpisode() ? 'episode' : 'movie');
 Connector.getTrack = () => {
 	if (isEpisode()) {
 		const parsed = parseSubtitle(findText(SUBTITLE_SELECTORS));
-		if (parsed.episodeTitle) return parsed.episodeTitle;
+		if (parsed.episodeTitle) {
+			return parsed.episodeTitle;
+		}
 	}
 	return findText(TITLE_SELECTORS);
 };
 
 Connector.getArtist = () => (isEpisode() ? findText(TITLE_SELECTORS) : null);
 
-Connector.getSeriesTitle = () => (isEpisode() ? findText(TITLE_SELECTORS) : null);
+Connector.getSeriesTitle = () =>
+	isEpisode() ? findText(TITLE_SELECTORS) : null;
 
 Connector.getSeason = () => parseSubtitle(findText(SUBTITLE_SELECTORS)).season;
-Connector.getEpisode = () => parseSubtitle(findText(SUBTITLE_SELECTORS)).episode;
+Connector.getEpisode = () =>
+	parseSubtitle(findText(SUBTITLE_SELECTORS)).episode;
 
 Connector.getAlbum = () => {
 	const season = parseSubtitle(findText(SUBTITLE_SELECTORS)).season;
@@ -121,6 +136,8 @@ Connector.getOriginUrl = () => window.location.href;
 
 Connector.getUniqueID = () => {
 	// Disney+ player URL forms vary: /video/<uuid>, /play/<uuid>, /movies/<slug>/<id>.
-	const match = /\/(?:video|play)\/([a-zA-Z0-9-]+)/.exec(window.location.pathname);
+	const match = /\/(?:video|play)\/([a-zA-Z0-9-]+)/.exec(
+		window.location.pathname,
+	);
 	return match?.[1] ?? null;
 };

@@ -400,7 +400,10 @@ async function writeMainIcon(): Promise<void> {
 			const canvas = createCanvas(res, res);
 			const ctx = canvas.getContext('2d');
 			ctx.drawImage(image, srcX, srcY, srcSize, srcSize, 0, 0, res, res);
-			await fs.writeFile(resolve(output, `icon_main_${res}.png`), canvas.toBuffer());
+			await fs.writeFile(
+				resolve(output, `icon_main_${res}.png`),
+				canvas.toBuffer(),
+			);
 		}
 		return;
 	}

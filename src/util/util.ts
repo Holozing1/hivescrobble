@@ -229,7 +229,6 @@ export function kebabCaseToPascalCase(text: string): string {
 		.join('');
 }
 
-
 /**
  * Check if script is currently running in a background script.
  *
@@ -250,7 +249,6 @@ export function isBackgroundScript(): boolean {
 	}
 	return false;
 }
-
 
 /**
  * Clamp value between a minimum and a maximum

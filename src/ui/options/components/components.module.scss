@@ -626,7 +626,7 @@ summary {
 		border: none;
 	}
 
-.scrobbleDetails {
+	.scrobbleDetails {
 		display: flex;
 		flex-direction: column;
 		flex-grow: 1;
@@ -819,7 +819,8 @@ summary {
 			padding: 0.2em 0;
 
 			&:not(:last-child) {
-				border-bottom: 1px solid var(--interactable-border-color, rgb(128 128 128 / 20%));
+				border-bottom: 1px solid
+					var(--interactable-border-color, rgb(128 128 128 / 20%));
 			}
 
 			.leaderboardRank {

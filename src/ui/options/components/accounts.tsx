@@ -38,7 +38,10 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 				setProfileUrl.refetch();
 			}
 		} catch (err) {
-			debugLog(`${scrobbler()?.getLabel()}: Error while fetching session`, 'warn');
+			debugLog(
+				`${scrobbler()?.getLabel()}: Error while fetching session`,
+				'warn',
+			);
 			debugLog(err, 'warn');
 		}
 	};
@@ -72,7 +75,10 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 								const candidates = [
 									...activeTabs,
 									...otherTabs.filter(
-										(t) => !activeTabs.some((a) => a.id === t.id),
+										(t) =>
+											!activeTabs.some(
+												(a) => a.id === t.id,
+											),
 									),
 								];
 
@@ -84,23 +90,31 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 										active: true,
 									});
 									if (created.id) {
-										await new Promise((r) => setTimeout(r, 1500));
+										await new Promise((r) =>
+											setTimeout(r, 1500),
+										);
 										candidates.push(created);
 									}
 								}
 
 								let lastErr: unknown = null;
 								for (const tab of candidates) {
-									if (!tab.id) continue;
+									if (!tab.id) {
+										continue;
+									}
 									try {
-										await (scrobbler() as HiveScrobbler).connect(tab.id);
+										await (
+											scrobbler() as HiveScrobbler
+										).connect(tab.id);
 										setSession.refetch();
 										setProfileUrl.refetch();
 										return;
 									} catch (err) {
 										lastErr = err;
 										const msg =
-											err instanceof Error ? err.message : String(err);
+											err instanceof Error
+												? err.message
+												: String(err);
 										// Injection failures (error page, restricted URL, frame
 										// gone) — try the next candidate. Anything else (Keychain
 										// rejected, user closed popup, network) is real, surface
@@ -131,7 +145,12 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 					</button>
 				}
 			>
-				<p>{t('accountsSignedInAs', session()?.sessionName || 'anonymous')}</p>
+				<p>
+					{t(
+						'accountsSignedInAs',
+						session()?.sessionName || 'anonymous',
+					)}
+				</p>
 				<div class={styles.buttonContainer}>
 					<a
 						class={styles.button}
@@ -162,7 +181,10 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 								// derivation needs an http(s) tab to inject the MAIN-world relay.
 								const tabs = await browser.tabs.query({});
 								const candidates = tabs.filter(
-									(t) => t.id != null && t.url && /^https?:/.test(t.url),
+									(t) =>
+										t.id != null &&
+										t.url &&
+										/^https?:/.test(t.url),
 								);
 								if (candidates.length === 0) {
 									alert(
@@ -172,7 +194,9 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 								}
 								let lastErr: unknown = null;
 								for (const tab of candidates) {
-									if (!tab.id) continue;
+									if (!tab.id) {
+										continue;
+									}
 									try {
 										const result = await (
 											scrobbler() as HiveScrobbler
@@ -187,7 +211,10 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 										return;
 									} catch (err) {
 										lastErr = err;
-										const msg = err instanceof Error ? err.message : String(err);
+										const msg =
+											err instanceof Error
+												? err.message
+												: String(err);
 										if (
 											msg.includes('error page') ||
 											msg.includes('Cannot access') ||
@@ -196,7 +223,9 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 										) {
 											continue;
 										}
-										alert(`Privacy derivation failed: ${msg}`);
+										alert(
+											`Privacy derivation failed: ${msg}`,
+										);
 										return;
 									}
 								}

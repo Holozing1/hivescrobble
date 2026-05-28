@@ -14,10 +14,12 @@ const globalOptions = BrowserStorage.getStorage(BrowserStorage.OPTIONS);
  * Keychain is missing/rejected — caller reverts the toggle.
  */
 async function ensurePrivacySecret(): Promise<void> {
-	const hive = ScrobbleService.getScrobblerByLabel('Hive') as
-		| HiveScrobbler
-		| null;
-	if (!hive) throw new Error('Hive scrobbler not loaded');
+	const hive = ScrobbleService.getScrobblerByLabel(
+		'Hive',
+	) as HiveScrobbler | null;
+	if (!hive) {
+		throw new Error('Hive scrobbler not loaded');
+	}
 
 	// Find a usable http(s) tab to inject the Keychain relay into.
 	const tabs = await browser.tabs.query({});
@@ -32,7 +34,9 @@ async function ensurePrivacySecret(): Promise<void> {
 
 	let lastErr: unknown = null;
 	for (const tab of candidates) {
-		if (!tab.id) continue;
+		if (!tab.id) {
+			continue;
+		}
 		try {
 			await hive.ensurePrivacySecret(tab.id);
 			return;
@@ -74,10 +78,7 @@ export default function PrivacyOptions(props: {
 		unknown
 	>;
 }) {
-	const setKey = async (
-		key: keyof Options.GlobalOptions,
-		value: boolean,
-	) => {
+	const setKey = async (key: keyof Options.GlobalOptions, value: boolean) => {
 		// On any OFF→ON flip, derive the privacy secret first so subsequent
 		// scrobbles broadcast silently. If derivation fails (Keychain
 		// rejected, no http tab), revert the toggle so we never end up in a
@@ -99,7 +100,9 @@ export default function PrivacyOptions(props: {
 		}
 
 		props.setOptions.mutate((o) => {
-			if (!o) return o;
+			if (!o) {
+				return o;
+			}
 			const updated = { ...o, [key]: value };
 			globalOptions.set(updated);
 			return updated;
@@ -109,46 +112,72 @@ export default function PrivacyOptions(props: {
 	return (
 		<>
 			<h2 id="header-privacy">Privacy</h2>
-			<p style={{ 'font-size': '0.9em', 'opacity': 0.85, 'margin-top': '0.25rem' }}>
-				When ON, scrobbles of that kind broadcast an encrypted blob to Hive instead
-				of artist + title. Only you can decrypt your own history (using your
-				posting key, no extra setup needed). Public chart contributions and
-				community stats skip these scrobbles.
+			<p
+				style={{
+					'font-size': '0.9em',
+					opacity: 0.85,
+					'margin-top': '0.25rem',
+				}}
+			>
+				When ON, scrobbles of that kind broadcast an encrypted blob to
+				Hive instead of artist + title. Only you can decrypt your own
+				history (using your posting key, no extra setup needed). Public
+				chart contributions and community stats skip these scrobbles.
 			</p>
 
 			<Checkbox
 				title="Encrypt music scrobbles (Spotify, YouTube Music, SoundCloud, etc.)"
 				label="Private music"
-				isChecked={() => props.options()?.[Options.HIVE_PRIVACY_MUSIC] ?? false}
+				isChecked={() =>
+					props.options()?.[Options.HIVE_PRIVACY_MUSIC] ?? false
+				}
 				onInput={(e) => {
-					void setKey(Options.HIVE_PRIVACY_MUSIC, e.currentTarget.checked);
+					void setKey(
+						Options.HIVE_PRIVACY_MUSIC,
+						e.currentTarget.checked,
+					);
 				}}
 			/>
 
 			<Checkbox
 				title="Encrypt non-music YouTube videos (vlogs, news, comedy — videos auto-scrobbled by the YouTube connector)"
 				label="Private videos"
-				isChecked={() => props.options()?.[Options.HIVE_PRIVACY_VIDEOS] ?? false}
+				isChecked={() =>
+					props.options()?.[Options.HIVE_PRIVACY_VIDEOS] ?? false
+				}
 				onInput={(e) => {
-					void setKey(Options.HIVE_PRIVACY_VIDEOS, e.currentTarget.checked);
+					void setKey(
+						Options.HIVE_PRIVACY_VIDEOS,
+						e.currentTarget.checked,
+					);
 				}}
 			/>
 
 			<Checkbox
 				title="Encrypt movies & TV scrobbles (Netflix, Disney+, Max, Prime Video, manual entries)"
 				label="Private movies & TV"
-				isChecked={() => props.options()?.[Options.HIVE_PRIVACY_MOVIES_TV] ?? false}
+				isChecked={() =>
+					props.options()?.[Options.HIVE_PRIVACY_MOVIES_TV] ?? false
+				}
 				onInput={(e) => {
-					void setKey(Options.HIVE_PRIVACY_MOVIES_TV, e.currentTarget.checked);
+					void setKey(
+						Options.HIVE_PRIVACY_MOVIES_TV,
+						e.currentTarget.checked,
+					);
 				}}
 			/>
 
 			<Checkbox
 				title="Encrypt podcast scrobbles (Overcast, Pocket Casts, Spotify shows)"
 				label="Private podcasts"
-				isChecked={() => props.options()?.[Options.HIVE_PRIVACY_PODCASTS] ?? false}
+				isChecked={() =>
+					props.options()?.[Options.HIVE_PRIVACY_PODCASTS] ?? false
+				}
 				onInput={(e) => {
-					void setKey(Options.HIVE_PRIVACY_PODCASTS, e.currentTarget.checked);
+					void setKey(
+						Options.HIVE_PRIVACY_PODCASTS,
+						e.currentTarget.checked,
+					);
 				}}
 			/>
 		</>

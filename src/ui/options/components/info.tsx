@@ -1,10 +1,4 @@
-import {
-	currentChangelog,
-	t,
-	CONTRIBUTING_URL,
-	CONTRIBUTORS_URL,
-	RELEASES_URL,
-} from '@/util/i18n';
+import { t, CONTRIBUTING_URL, CONTRIBUTORS_URL } from '@/util/i18n';
 import { getExtensionVersion } from '@/util/util-browser';
 
 /**
@@ -17,10 +11,15 @@ export default function InfoComponent() {
 			<p>{t('aboutExtensionDesc')}</p>
 			<p>
 				Hive Scrobbler is a fork of{' '}
-				<a href="https://github.com/web-scrobbler/web-scrobbler" target="_blank" rel="noopener noreferrer">
+				<a
+					href="https://github.com/web-scrobbler/web-scrobbler"
+					target="_blank"
+					rel="noopener noreferrer"
+				>
 					Web Scrobbler
 				</a>
-				, an open-source browser extension licensed under the MIT License.
+				, an open-source browser extension licensed under the MIT
+				License.
 			</p>
 			<h2>{t('versionTitle')}</h2>
 			<p innerHTML={t('versionText', getExtensionVersion())}></p>

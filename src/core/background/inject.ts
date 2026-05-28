@@ -55,7 +55,9 @@ const RESTRICTED_URL_SCHEMES = [
 ];
 
 function isRestrictedUrl(url: string): boolean {
-	return RESTRICTED_URL_SCHEMES.some((s) => url.startsWith(s) || url.includes(s));
+	return RESTRICTED_URL_SCHEMES.some(
+		(s) => url.startsWith(s) || url.includes(s),
+	);
 }
 
 /**

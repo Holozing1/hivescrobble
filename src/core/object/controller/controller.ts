@@ -926,7 +926,8 @@ export default class Controller {
 			if (this.currentSong?.flags.isScrobbled) {
 				this.accumulatedPlaySeconds += this.playbackTimer.getElapsed();
 				if (!this.pendingFinalizeSong) {
-					this.pendingFinalizeSong = this.currentSong.getCloneableData();
+					this.pendingFinalizeSong =
+						this.currentSong.getCloneableData();
 				}
 			}
 		} else {
@@ -934,13 +935,18 @@ export default class Controller {
 			const currentElapsed = this.currentSong?.flags.isScrobbled
 				? this.playbackTimer.getElapsed()
 				: 0;
-			const totalPlaySeconds = this.accumulatedPlaySeconds + currentElapsed;
+			const totalPlaySeconds =
+				this.accumulatedPlaySeconds + currentElapsed;
 			const songToFinalize =
-				this.pendingFinalizeSong ?? this.currentSong?.getCloneableData();
+				this.pendingFinalizeSong ??
+				this.currentSong?.getCloneableData();
 			if (totalPlaySeconds > 0 && songToFinalize) {
 				void sendContentMessage({
 					type: 'hiveFinalize',
-					payload: { playSeconds: totalPlaySeconds, song: songToFinalize },
+					payload: {
+						playSeconds: totalPlaySeconds,
+						song: songToFinalize,
+					},
 				});
 			}
 			this.accumulatedPlaySeconds = 0;
@@ -1406,7 +1412,9 @@ export default class Controller {
 				type: 'hiveSavePending',
 				payload: {
 					song: this.currentSong.getCloneableData(),
-					playSeconds: this.accumulatedPlaySeconds + this.playbackTimer.getElapsed(),
+					playSeconds:
+						this.accumulatedPlaySeconds +
+						this.playbackTimer.getElapsed(),
 				},
 			});
 

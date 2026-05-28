@@ -72,7 +72,12 @@ setupContentListeners(
 				}
 				window.addEventListener('message', onMessage);
 				window.postMessage(
-					{ __hive_scrobbler: true, type: 'hiveBroadcast', id, payload },
+					{
+						__hive_scrobbler: true,
+						type: 'hiveBroadcast',
+						id,
+						payload,
+					},
 					'*',
 				);
 			});

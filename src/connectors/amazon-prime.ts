@@ -16,7 +16,9 @@ Connector.isVideo = () => true;
 
 function getMainVideoElement(): HTMLVideoElement | null {
 	const videos = Array.from(document.querySelectorAll('video'));
-	if (videos.length === 0) return null;
+	if (videos.length === 0) {
+		return null;
+	}
 	return videos.reduce((biggest, candidate) =>
 		candidate.duration > (biggest.duration || 0) ? candidate : biggest,
 	);
@@ -37,7 +39,9 @@ function findText(selectors: string[]): string | null {
 	for (const sel of selectors) {
 		const el = document.querySelector(sel) as HTMLElement | null;
 		const text = el?.textContent?.trim();
-		if (text) return text;
+		if (text) {
+			return text;
+		}
 	}
 	return null;
 }
@@ -49,13 +53,15 @@ interface ParsedSubtitle {
 }
 
 function parseSubtitle(subtitle: string | null): ParsedSubtitle {
-	if (!subtitle) return { season: null, episode: null, episodeTitle: null };
+	if (!subtitle) {
+		return { season: null, episode: null, episodeTitle: null };
+	}
 	// Amazon variants:
 	//   "S1 E3 The Pilot"
 	//   "Season 1, Episode 3"
 	//   "S1, Ep. 3"
 	const concise =
-		/S(\d+)[,\s]*(?:Ep\.?\s*|E\s*)(\d+)\s*[·:.\-]?\s*(.*)$/i.exec(subtitle);
+		/S(\d+)[,\s]*(?:Ep\.?\s*|E\s*)(\d+)\s*[·:.-]?\s*(.*)$/i.exec(subtitle);
 	if (concise) {
 		return {
 			season: parseInt(concise[1], 10),
@@ -64,7 +70,7 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 		};
 	}
 	const verbose =
-		/Season\s+(\d+)[,\s]+Episode\s+(\d+)\s*[·:.\-]?\s*(.*)$/i.exec(subtitle);
+		/Season\s+(\d+)[,\s]+Episode\s+(\d+)\s*[·:.-]?\s*(.*)$/i.exec(subtitle);
 	if (verbose) {
 		return {
 			season: parseInt(verbose[1], 10),
@@ -77,7 +83,9 @@ function parseSubtitle(subtitle: string | null): ParsedSubtitle {
 
 function isEpisode(): boolean {
 	const sub = findText(SUBTITLE_SELECTORS);
-	if (!sub) return false;
+	if (!sub) {
+		return false;
+	}
 	return /S\d+|Season\s+\d+|Episode\s+\d+|Ep\.?\s*\d+/i.test(sub);
 }
 
@@ -86,7 +94,9 @@ Connector.getVideoKind = () => (isEpisode() ? 'episode' : 'movie');
 Connector.getTrack = () => {
 	if (isEpisode()) {
 		const parsed = parseSubtitle(findText(SUBTITLE_SELECTORS));
-		if (parsed.episodeTitle) return parsed.episodeTitle;
+		if (parsed.episodeTitle) {
+			return parsed.episodeTitle;
+		}
 		// Fallback when Amazon doesn't surface the episode title — use the
 		// series title plus marker so we have *something* to show pre-TMDB.
 		const series = findText(TITLE_SELECTORS);
@@ -99,10 +109,12 @@ Connector.getTrack = () => {
 
 Connector.getArtist = () => (isEpisode() ? findText(TITLE_SELECTORS) : null);
 
-Connector.getSeriesTitle = () => (isEpisode() ? findText(TITLE_SELECTORS) : null);
+Connector.getSeriesTitle = () =>
+	isEpisode() ? findText(TITLE_SELECTORS) : null;
 
 Connector.getSeason = () => parseSubtitle(findText(SUBTITLE_SELECTORS)).season;
-Connector.getEpisode = () => parseSubtitle(findText(SUBTITLE_SELECTORS)).episode;
+Connector.getEpisode = () =>
+	parseSubtitle(findText(SUBTITLE_SELECTORS)).episode;
 
 Connector.getAlbum = () => {
 	const season = parseSubtitle(findText(SUBTITLE_SELECTORS)).season;

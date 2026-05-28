@@ -26,7 +26,9 @@ function getMainVideoElement(): HTMLVideoElement | null {
 	// Pick the largest <video> element on the page (Netflix may have hidden
 	// preview videos in carousels; we want the active player).
 	const videos = Array.from(document.querySelectorAll('video'));
-	if (videos.length === 0) return null;
+	if (videos.length === 0) {
+		return null;
+	}
 	return videos.reduce((biggest, candidate) =>
 		candidate.duration > (biggest.duration || 0) ? candidate : biggest,
 	);
@@ -66,7 +68,10 @@ function parseEpisodeOverlay(text: string): ParsedEpisode {
 			title: concise[3].trim(),
 		};
 	}
-	const verbose = /Season\s+(\d+).*Episode\s+(\d+)\s*[:.]?\s*['"]?(.*?)['"]?$/i.exec(text);
+	const verbose =
+		/Season\s+(\d+).*Episode\s+(\d+)\s*[:.]?\s*['"]?(.*?)['"]?$/i.exec(
+			text,
+		);
 	if (verbose) {
 		return {
 			season: parseInt(verbose[1], 10),
@@ -80,7 +85,9 @@ function parseEpisodeOverlay(text: string): ParsedEpisode {
 function isEpisodeContext(): boolean {
 	// If the player overlay has any season/episode marker, we're on an episode.
 	const text = getEpisodeOverlayText();
-	if (!text) return false;
+	if (!text) {
+		return false;
+	}
 	return /^S\d+:E\d+|Season\s+\d+.*Episode\s+\d+/i.test(text);
 }
 
@@ -91,7 +98,9 @@ Connector.getTrack = () => {
 		const overlayText = getEpisodeOverlayText();
 		if (overlayText) {
 			const { title } = parseEpisodeOverlay(overlayText);
-			if (title) return title;
+			if (title) {
+				return title;
+			}
 		}
 	}
 	const titleEl = getPlayerTitleEl();
@@ -101,37 +110,53 @@ Connector.getTrack = () => {
 Connector.getArtist = () => {
 	// For episodes, the "artist" slot carries the series title so the existing
 	// popup music UI shows something sensible. For movies, leave null.
-	if (!isEpisodeContext()) return null;
+	if (!isEpisodeContext()) {
+		return null;
+	}
 	const titleEl = getPlayerTitleEl();
 	return titleEl?.textContent?.trim() ?? null;
 };
 
 Connector.getAlbum = () => {
 	// Repurpose album as "Season N" for episodes — readable in the popup.
-	if (!isEpisodeContext()) return null;
+	if (!isEpisodeContext()) {
+		return null;
+	}
 	const overlayText = getEpisodeOverlayText();
-	if (!overlayText) return null;
+	if (!overlayText) {
+		return null;
+	}
 	const { season } = parseEpisodeOverlay(overlayText);
 	return season ? `Season ${season}` : null;
 };
 
 Connector.getSeriesTitle = () => {
-	if (!isEpisodeContext()) return null;
+	if (!isEpisodeContext()) {
+		return null;
+	}
 	const titleEl = getPlayerTitleEl();
 	return titleEl?.textContent?.trim() ?? null;
 };
 
 Connector.getSeason = () => {
-	if (!isEpisodeContext()) return null;
+	if (!isEpisodeContext()) {
+		return null;
+	}
 	const overlayText = getEpisodeOverlayText();
-	if (!overlayText) return null;
+	if (!overlayText) {
+		return null;
+	}
 	return parseEpisodeOverlay(overlayText).season;
 };
 
 Connector.getEpisode = () => {
-	if (!isEpisodeContext()) return null;
+	if (!isEpisodeContext()) {
+		return null;
+	}
 	const overlayText = getEpisodeOverlayText();
-	if (!overlayText) return null;
+	if (!overlayText) {
+		return null;
+	}
 	return parseEpisodeOverlay(overlayText).episode;
 };
 

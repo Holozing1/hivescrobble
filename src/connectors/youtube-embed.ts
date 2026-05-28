@@ -61,25 +61,39 @@ function getVideoId(): string | null {
 	// Parent-injected videoId wins — see comment on `injected` above. We only
 	// fall back to the player/URL lookup when no host page has claimed this
 	// embed (e.g. a vanilla site that just embeds a YouTube iframe).
-	if (injected?.videoId) return injected.videoId;
-	return getPlayerData()?.video_id ?? Util.getYtVideoIdFromUrl(window.location.href);
+	if (injected?.videoId) {
+		return injected.videoId;
+	}
+	return (
+		getPlayerData()?.video_id ??
+		Util.getYtVideoIdFromUrl(window.location.href)
+	);
 }
 
 function getArtistTrack(): { artist: string | null; track: string | null } {
 	// Prefer info sent by the Zingit page — it knows exactly what's playing.
-	if (injected) return { artist: injected.artist, track: injected.track };
+	if (injected) {
+		return { artist: injected.artist, track: injected.track };
+	}
 
 	// Fall back to player API (only works when called from page context, not here)
 	const data = getPlayerData();
 	if (data?.title) {
 		const parsed = Util.processYtVideoTitle(data.title);
-		if (parsed.artist) return { artist: parsed.artist ?? null, track: parsed.track ?? null };
+		if (parsed.artist) {
+			return {
+				artist: parsed.artist ?? null,
+				track: parsed.track ?? null,
+			};
+		}
 		const author = (data.author ?? '').replace(/ - Topic$/i, '').trim();
 		return { artist: author || null, track: parsed.track ?? data.title };
 	}
 
 	// Last resort: document.title
-	const docTitle = document.title.replace(/\s*[-–]\s*YouTube\s*$/i, '').trim();
+	const docTitle = document.title
+		.replace(/\s*[-–]\s*YouTube\s*$/i, '')
+		.trim();
 	const fallback = Util.processYtVideoTitle(docTitle);
 	return { artist: fallback.artist ?? null, track: fallback.track ?? null };
 }
@@ -88,7 +102,9 @@ function setupConnector() {
 	const videoElement = document.querySelector(
 		VIDEO_SELECTOR,
 	) as HTMLVideoElement;
-	if (!videoElement) return;
+	if (!videoElement) {
+		return;
+	}
 
 	videoElement.addEventListener('timeupdate', Connector.onStateChanged);
 
@@ -108,7 +124,9 @@ function setupConnector() {
 }
 
 function setupWithRetry(attempts = 0): void {
-	if (attempts > 40) return;
+	if (attempts > 40) {
+		return;
+	}
 	const videoElement = document.querySelector(
 		VIDEO_SELECTOR,
 	) as HTMLVideoElement | null;

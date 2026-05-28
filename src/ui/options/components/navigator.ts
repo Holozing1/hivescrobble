@@ -136,11 +136,7 @@ export const showSomeLoveItem: NavigatorNavigationButton = {
 /**
  * All the different options pages, their sidebar labels, and icons.
  */
-export const settings: Navigator = [
-	accountItem,
-	optionsGroup,
-	aboutGroup,
-];
+export const settings: Navigator = [accountItem, optionsGroup, aboutGroup];
 
 async function getToggleNavigators(): Promise<NavigatorActionButton[]> {
 	const tab = await getCurrentTab();

@@ -25,7 +25,7 @@ import browser from 'webextension-polyfill';
  */
 
 const CHALLENGE = 'zingit:privacy-key:v1';
-const STORAGE_KEY_PREFIX = 'privacy_secret_';   // namespaced per username
+const STORAGE_KEY_PREFIX = 'privacy_secret_'; // namespaced per username
 
 /** Per-tab MAIN-world relay file used to call window.hive_keychain. */
 const RELAY_FILE = 'content/hive-relay.js';
@@ -44,11 +44,16 @@ export class PrivacySecretError extends Error {
  *
  * Throws PrivacySecretError if Keychain is unavailable or rejected.
  */
-export async function getOrDerive(username: string, tabId: number): Promise<ArrayBuffer> {
+export async function getOrDerive(
+	username: string,
+	tabId: number,
+): Promise<ArrayBuffer> {
 	const cached = await loadCached(username);
-	if (cached) return cached;
+	if (cached) {
+		return cached;
+	}
 
-	const sig    = await signChallenge(username, tabId);
+	const sig = await signChallenge(username, tabId);
 	const secret = await hashToKey(sig);
 	await store(username, secret);
 	return secret;
@@ -61,16 +66,20 @@ export async function getCached(username: string): Promise<ArrayBuffer | null> {
 
 /** Wipes the cached secret for this username. */
 export async function clear(username: string): Promise<void> {
-	await browser.storage.local.remove(STORAGE_KEY_PREFIX + username.toLowerCase());
+	await browser.storage.local.remove(
+		STORAGE_KEY_PREFIX + username.toLowerCase(),
+	);
 }
 
 // ── Internals ──────────────────────────────────────────────────────────
 
 async function loadCached(username: string): Promise<ArrayBuffer | null> {
-	const k    = STORAGE_KEY_PREFIX + username.toLowerCase();
+	const k = STORAGE_KEY_PREFIX + username.toLowerCase();
 	const data = await browser.storage.local.get(k);
-	const hex  = data[k] as string | undefined;
-	if (!hex) return null;
+	const hex = data[k] as string | undefined;
+	if (!hex) {
+		return null;
+	}
 	return hexToBuffer(hex);
 }
 
@@ -90,15 +99,15 @@ async function store(username: string, secret: ArrayBuffer): Promise<void> {
 async function signChallenge(username: string, tabId: number): Promise<string> {
 	await browser.scripting.executeScript({
 		target: { tabId },
-		world:  'MAIN',
-		files:  [RELAY_FILE],
+		world: 'MAIN',
+		files: [RELAY_FILE],
 	});
 
 	const results = await browser.scripting.executeScript({
 		target: { tabId },
-		world:  'ISOLATED',
-		args:   [username, CHALLENGE],
-		func:   (user: string, challenge: string) =>
+		world: 'ISOLATED',
+		args: [username, CHALLENGE],
+		func: (user: string, challenge: string) =>
 			new Promise<string>((resolve, reject) => {
 				const id = crypto.randomUUID();
 				const onMessage = (event: MessageEvent) => {
@@ -108,21 +117,34 @@ async function signChallenge(username: string, tabId: number): Promise<string> {
 						!d?.__hive_scrobbler ||
 						d.type !== 'hivePrivacySignResult' ||
 						d.id !== id
-					) return;
+					) {
+						return;
+					}
 					window.removeEventListener('message', onMessage);
-					if (d.error) reject(new Error(d.error as string));
-					else        resolve(d.signature as string);
+					if (d.error) {
+						reject(new Error(d.error as string));
+					} else {
+						resolve(d.signature as string);
+					}
 				};
 				window.addEventListener('message', onMessage);
 				window.postMessage(
-					{ __hive_scrobbler: true, type: 'hivePrivacySign', id, username: user, challenge },
+					{
+						__hive_scrobbler: true,
+						type: 'hivePrivacySign',
+						id,
+						username: user,
+						challenge,
+					},
 					'*',
 				);
 			}),
 	});
 
 	const sig = results?.[0]?.result as string | undefined;
-	if (!sig) throw new PrivacySecretError('Keychain did not return a signature');
+	if (!sig) {
+		throw new PrivacySecretError('Keychain did not return a signature');
+	}
 	return sig;
 }
 
@@ -137,13 +159,19 @@ async function hashToKey(hexSignature: string): Promise<ArrayBuffer> {
 function bufferToHex(buf: ArrayBuffer): string {
 	const bytes = new Uint8Array(buf);
 	let out = '';
-	for (let i = 0; i < bytes.length; i++) out += bytes[i].toString(16).padStart(2, '0');
+	for (let i = 0; i < bytes.length; i++) {
+		out += bytes[i].toString(16).padStart(2, '0');
+	}
 	return out;
 }
 
 function hexToBuffer(hex: string): ArrayBuffer {
-	if (hex.length % 2 !== 0) throw new PrivacySecretError('odd-length hex string');
+	if (hex.length % 2 !== 0) {
+		throw new PrivacySecretError('odd-length hex string');
+	}
 	const bytes = new Uint8Array(hex.length / 2);
-	for (let i = 0; i < bytes.length; i++) bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+	for (let i = 0; i < bytes.length; i++) {
+		bytes[i] = parseInt(hex.substr(i * 2, 2), 16);
+	}
 	return bytes.buffer;
 }

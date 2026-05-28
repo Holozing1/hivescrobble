@@ -155,16 +155,11 @@ const VIDEO_PODCAST_CONNECTOR_IDS = new Set([
  * vlogs, talks, music videos, gaming clips. Separate section so users
  * can find them by purpose.
  */
-const VIDEO_PLATFORM_CONNECTOR_IDS = new Set([
-	'3speak',
-	'3speak-embed',
-]);
+const VIDEO_PLATFORM_CONNECTOR_IDS = new Set(['3speak', '3speak-embed']);
 
 // Preserve the order from connectors.ts within each category so the lists
 // stay deterministic across builds.
-const musicConnectors = connectors.filter((c) =>
-	MUSIC_CONNECTOR_IDS.has(c.id),
-);
+const musicConnectors = connectors.filter((c) => MUSIC_CONNECTOR_IDS.has(c.id));
 const videoPodcastConnectors = connectors.filter((c) =>
 	VIDEO_PODCAST_CONNECTOR_IDS.has(c.id),
 );
@@ -223,7 +218,8 @@ function ConnectorOptions(props: {
 			</For>
 
 			<li style="margin-top: 0.75rem; font-size: 0.8rem; opacity: 0.45;">
-				Looking for a different platform? More connectors are available on request.
+				Looking for a different platform? More connectors are available
+				on request.
 			</li>
 		</Suspense>
 	);
