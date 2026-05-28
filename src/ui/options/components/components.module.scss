@@ -631,8 +631,8 @@ summary {
 		flex-direction: column;
 		flex-grow: 1;
 		flex-shrink: 1;
-		justify-content: center;
 		gap: 0.25em;
+		justify-content: center;
 		overflow: hidden;
 
 		.scrobbleMetadata {
@@ -819,7 +819,7 @@ summary {
 			padding: 0.2em 0;
 
 			&:not(:last-child) {
-				border-bottom: 1px solid var(--interactable-border-color, rgba(128, 128, 128, 0.2));
+				border-bottom: 1px solid var(--interactable-border-color, rgb(128 128 128 / 20%));
 			}
 
 			.leaderboardRank {

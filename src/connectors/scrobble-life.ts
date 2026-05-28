@@ -34,7 +34,13 @@ function announceAudius(): void {
 }
 
 function setupConnector(audio: HTMLAudioElement): void {
-	for (const ev of ['timeupdate', 'play', 'pause', 'ended', 'loadedmetadata']) {
+	for (const ev of [
+		'timeupdate',
+		'play',
+		'pause',
+		'ended',
+		'loadedmetadata',
+	]) {
 		audio.addEventListener(ev, Connector.onStateChanged);
 	}
 
@@ -62,7 +68,9 @@ function setupConnector(audio: HTMLAudioElement): void {
 function setupWithRetry(attempts = 0): void {
 	const audio = audioEl();
 	if (!audio) {
-		if (attempts > 40) return;
+		if (attempts > 40) {
+			return;
+		}
 		setTimeout(() => setupWithRetry(attempts + 1), 500);
 		return;
 	}

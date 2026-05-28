@@ -18,6 +18,7 @@ import ClonedSong from '@/core/object/cloned-song';
 import Base from './base';
 import {
 	BlockOutlined,
+	FavoriteOutlined,
 	RestartAltOutlined,
 } from '@/ui/components/icons';
 import { sendBackgroundMessage } from '@/util/communication';
