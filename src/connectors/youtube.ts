@@ -66,6 +66,15 @@ let scrobbleNonMusicVideos = true;
  */
 let getTrackInfoFromYtMusicEnabled = false;
 
+// Always consult YouTube Music's recognition (videoDetails.musicVideoType)
+// for the music-vs-video decision in isVideo(), independent of the track-info
+// getter flag above. This is the authoritative "is this a music recording?"
+// signal — YouTube's own Content-ID match — and it fires even for re-uploads
+// on non-VEVO channels (the case heuristics miss most). On by default; the
+// per-video lookup is cached. Track-info *extraction* stays gated by the flag
+// above (kept conservative — only OMV-typed videos yield a title/artist).
+const classifyWithYtMusic = true;
+
 let currentVideoDescription: string | null = null;
 let artistTrackFromDescription: TrackInfoWithAlbum | null = null;
 
@@ -434,6 +443,22 @@ Connector.isVideo = () => {
 		return true;
 	}
 
+	// YouTube Music recognition (Content-ID musicVideoType) — the
+	// authoritative "is this a music recording?" signal. Trust it over the
+	// weaker category/duration/channel heuristics below: it rescues real
+	// songs they'd mis-flag as video (a track on a personal/non-VEVO channel,
+	// a long song/mix/DJ set). POSITIVE-ONLY — absence of recognition does
+	// NOT imply non-music (indie/live tracks aren't in YT Music's graph), so
+	// we fall through when unrecognised. Runs AFTER the strong non-music
+	// patterns above so a "X reaction"/"official trailer" that picks up a UGC
+	// audio match still stays video. Kicks the lookup once per video
+	// (idempotent + cached); fills on a later tick if still pending.
+	getTrackInfoFromYoutubeMusic();
+	const ytMusic = getTrackInfoFromYoutubeMusicCache[getVideoId() ?? ''];
+	if (ytMusic?.done && ytMusic.recognisedByYtMusic) {
+		return false;
+	}
+
 	const category = getVideoCategory();
 	if (
 		category != null &&
@@ -721,9 +746,15 @@ function getTrackInfoFromYoutubeMusic():
 	| ArtistTrackInfo
 	| Record<string, never>
 	| undefined {
-	// if neither getTrackInfoFromYtMusicEnabled nor scrobbleMusicRecognisedOnly
-	// are enabled, there is no need to run this getter
-	if (!getTrackInfoFromYtMusicEnabled && !scrobbleMusicRecognisedOnly) {
+	// Skip only if NEITHER the track-info getter, the recognised-only gate,
+	// NOR the classification use needs it. classifyWithYtMusic keeps the
+	// recognition fetch running (to populate recognisedByYtMusic for
+	// isVideo) even when the track-info getter flag is off.
+	if (
+		!getTrackInfoFromYtMusicEnabled &&
+		!scrobbleMusicRecognisedOnly &&
+		!classifyWithYtMusic
+	) {
 		return {};
 	}
 
