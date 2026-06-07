@@ -149,8 +149,26 @@ async function syncGuestToken(): Promise<void> {
 				return;
 			}
 		}
-		if (res.status === 401 || res.status === 409) {
+		if (res.status === 401) {
+			// Not (or no longer) a guest — drop the credential entirely.
 			await browser.storage.local.remove('GuestAuth');
+		} else if (res.status === 409) {
+			// Graduated to a Hive account: keep the Google identity so the
+			// account panel can still show "also linked with Google", but drop
+			// the ingest token so scrobbles go on-chain via Keychain rather than
+			// the guest ingest endpoint (readGuestAuth requires the token).
+			const existing = (await browser.storage.local.get('GuestAuth'))
+				?.GuestAuth as
+				| { username?: string | null; origin?: string }
+				| undefined;
+			if (existing) {
+				await browser.storage.local.set({
+					GuestAuth: {
+						username: existing.username ?? null,
+						origin: existing.origin ?? window.location.origin,
+					},
+				});
+			}
 		}
 	} catch {
 		// Offline / network error — keep any existing token.

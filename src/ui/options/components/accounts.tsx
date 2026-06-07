@@ -31,8 +31,9 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 	);
 	// Guest (Google) credential the auth-sync content script stores after a
 	// Google login on scrobble.life. A guest's getSession() returns an EMPTY
-	// sessionID (so the scrobbler still binds), so we key the Hive block on a
-	// non-empty sessionID and show a Google indicator otherwise.
+	// sessionID (so the scrobbler still binds), so the Hive block keys on a
+	// non-empty sessionID. The Hive and Google sections render independently,
+	// so a graduated user (Hive account + linked Google) sees BOTH.
 	const [guestAuth] = createResource(async () => {
 		try {
 			const d = await browser.storage.local.get('GuestAuth');
@@ -70,129 +71,99 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 	return (
 		<div role="group" aria-label={scrobbler()?.getLabel()}>
 			<h2>{scrobbler()?.getLabel()}</h2>
+
+			{/* Hive (Keychain) section */}
 			<Show
 				when={hiveSession()}
 				fallback={
-					<Show
-						when={guestAuth()}
-						fallback={
-							<button
-								class={styles.button}
-								onClick={() =>
-									void (async () => {
-										// Keychain only injects into http/https pages, not extension
-										// pages. Build a candidate list — active tab first, then any
-										// other http/https tab — so a tab in an error state (Chrome
-										// raises "Frame with ID 0 is showing error page" when
-										// executeScript hits a failed-to-load tab) falls through to
-										// the next candidate instead of failing the whole flow.
-										const activeTabs = await browser.tabs.query({
-											active: true,
-											url: ['http://*/*', 'https://*/*'],
-										});
-										const otherTabs = await browser.tabs.query({
-											url: ['http://*/*', 'https://*/*'],
-										});
-										const candidates = [
-											...activeTabs,
-											...otherTabs.filter(
-												(t) =>
-													!activeTabs.some(
-														(a) => a.id === t.id,
-													),
+					<button
+						class={styles.button}
+						onClick={() =>
+							void (async () => {
+								// Keychain only injects into http/https pages, not extension
+								// pages. Build a candidate list — active tab first, then any
+								// other http/https tab — so a tab in an error state (Chrome
+								// raises "Frame with ID 0 is showing error page" when
+								// executeScript hits a failed-to-load tab) falls through to
+								// the next candidate instead of failing the whole flow.
+								const activeTabs = await browser.tabs.query({
+									active: true,
+									url: ['http://*/*', 'https://*/*'],
+								});
+								const otherTabs = await browser.tabs.query({
+									url: ['http://*/*', 'https://*/*'],
+								});
+								const candidates = [
+									...activeTabs,
+									...otherTabs.filter(
+										(t) =>
+											!activeTabs.some(
+												(a) => a.id === t.id,
 											),
-										];
+									),
+								];
 
-										// No usable tab — open scrobble.life and use that. Wait
-										// briefly for it to start loading before attempting injection.
-										if (candidates.length === 0) {
-											const created = await browser.tabs.create({
-												url: 'https://scrobble.life',
-												active: true,
-											});
-											if (created.id) {
-												await new Promise((r) =>
-													setTimeout(r, 1500),
-												);
-												candidates.push(created);
-											}
-										}
-
-										let lastErr: unknown = null;
-										for (const tab of candidates) {
-											if (!tab.id) {
-												continue;
-											}
-											try {
-												await (
-													scrobbler() as HiveScrobbler
-												).connect(tab.id);
-												setSession.refetch();
-												setProfileUrl.refetch();
-												return;
-											} catch (err) {
-												lastErr = err;
-												const msg =
-													err instanceof Error
-														? err.message
-														: String(err);
-												// Injection failures (error page, restricted URL, frame
-												// gone) — try the next candidate. Anything else (Keychain
-												// rejected, user closed popup, network) is real, surface
-												// it and stop.
-												if (
-													msg.includes('error page') ||
-													msg.includes('Cannot access') ||
-													msg.includes('Frame with ID') ||
-													msg.includes('No tab with id')
-												) {
-													continue;
-												}
-												alert(`Connection failed: ${msg}`);
-												return;
-											}
-										}
-										alert(
-											`Connection failed — every open tab refused script injection. Open https://scrobble.life or any music site in a fresh tab and try again.${
-												lastErr instanceof Error
-													? `\n\n(${lastErr.message})`
-													: ''
-											}`,
+								// No usable tab — open scrobble.life and use that. Wait
+								// briefly for it to start loading before attempting injection.
+								if (candidates.length === 0) {
+									const created = await browser.tabs.create({
+										url: 'https://scrobble.life',
+										active: true,
+									});
+									if (created.id) {
+										await new Promise((r) =>
+											setTimeout(r, 1500),
 										);
-									})()
+										candidates.push(created);
+									}
 								}
-							>
-								{t('hiveConnectWithKeychain')}
-							</button>
+
+								let lastErr: unknown = null;
+								for (const tab of candidates) {
+									if (!tab.id) {
+										continue;
+									}
+									try {
+										await (
+											scrobbler() as HiveScrobbler
+										).connect(tab.id);
+										setSession.refetch();
+										setProfileUrl.refetch();
+										return;
+									} catch (err) {
+										lastErr = err;
+										const msg =
+											err instanceof Error
+												? err.message
+												: String(err);
+										// Injection failures (error page, restricted URL, frame
+										// gone) — try the next candidate. Anything else (Keychain
+										// rejected, user closed popup, network) is real, surface
+										// it and stop.
+										if (
+											msg.includes('error page') ||
+											msg.includes('Cannot access') ||
+											msg.includes('Frame with ID') ||
+											msg.includes('No tab with id')
+										) {
+											continue;
+										}
+										alert(`Connection failed: ${msg}`);
+										return;
+									}
+								}
+								alert(
+									`Connection failed — every open tab refused script injection. Open https://scrobble.life or any music site in a fresh tab and try again.${
+										lastErr instanceof Error
+											? `\n\n(${lastErr.message})`
+											: ''
+									}`,
+								);
+							})()
 						}
 					>
-						{/* Signed in with Google (guest) — scrobbles go to
-						    scrobble.life's server, not the chain, until graduation. */}
-						<p>
-							Signed in with Google
-							<Show when={guestAuth()?.username}>
-								{' '}
-								as <strong>{guestAuth()?.username}</strong>
-							</Show>
-						</p>
-						<p>
-							Your scrobbles are saved to scrobble.life. Claim a free
-							Hive account once you&apos;ve scrobbled enough to own your
-							history on-chain.
-						</p>
-						<Show when={guestAuth()?.username}>
-							<a
-								class={styles.button}
-								href={`${guestAuth()?.origin}/g/${encodeURIComponent(
-									guestAuth()?.username ?? '',
-								)}`}
-								target="_blank"
-								rel="noopener noreferrer"
-							>
-								{t('accountsProfile')}
-							</a>
-						</Show>
-					</Show>
+						{t('hiveConnectWithKeychain')}
+					</button>
 				}
 			>
 				<p>
@@ -292,6 +263,39 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 						🔒 Test privacy secret
 					</button>
 				</div>
+			</Show>
+
+			{/* Google (guest) section — renders independently of Hive, so a
+			    graduated user who has both sees both. */}
+			<Show when={guestAuth()}>
+				<p>
+					{hiveSession()
+						? 'Also linked with Google'
+						: 'Signed in with Google'}
+					<Show when={guestAuth()?.username}>
+						{' '}
+						as <strong>{guestAuth()?.username}</strong>
+					</Show>
+				</p>
+				<Show when={!hiveSession()}>
+					<p>
+						Your scrobbles are saved to scrobble.life. Claim a free Hive
+						account once you&apos;ve scrobbled enough to own your history
+						on-chain.
+					</p>
+				</Show>
+				<Show when={guestAuth()?.username}>
+					<a
+						class={styles.button}
+						href={`${guestAuth()?.origin}/g/${encodeURIComponent(
+							guestAuth()?.username ?? '',
+						)}`}
+						target="_blank"
+						rel="noopener noreferrer"
+					>
+						{t('accountsProfile')}
+					</a>
+				</Show>
 			</Show>
 		</div>
 	);
