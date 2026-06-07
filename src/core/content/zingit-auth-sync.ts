@@ -117,6 +117,46 @@ function announcePresence(): void {
 	}
 }
 
+/**
+ * Trade the HttpOnly guest (Google) session cookie for a Bearer ingest
+ * token the scrobbler can POST with. Runs same-origin on scrobble.life so
+ * the cookie rides along. Stores { token, username, origin } under
+ * `GuestAuth`; clears it when the visitor isn't a guest (401) or has
+ * graduated to a Hive account (409). Hive (Keychain) users simply never
+ * have a guest cookie, so this no-ops for them.
+ */
+async function syncGuestToken(): Promise<void> {
+	try {
+		const res = await fetch('/api/auth/extension-token', {
+			credentials: 'include',
+		});
+		if (res.status === 200) {
+			const d = (await res.json()) as {
+				token?: string;
+				username?: string | null;
+			};
+			if (d && typeof d.token === 'string' && d.token) {
+				// Normalise www → apex so the scrobbler POSTs to the
+				// canonical origin (a www→non-www 301 would break a POST).
+				const origin = window.location.origin.replace('://www.', '://');
+				await browser.storage.local.set({
+					GuestAuth: {
+						token: d.token,
+						username: d.username ?? null,
+						origin,
+					},
+				});
+				return;
+			}
+		}
+		if (res.status === 401 || res.status === 409) {
+			await browser.storage.local.remove('GuestAuth');
+		}
+	} catch {
+		// Offline / network error — keep any existing token.
+	}
+}
+
 export function setupZingitAuthSync(): void {
 	if (!isAllowedHost()) {
 		return;
@@ -125,6 +165,9 @@ export function setupZingitAuthSync(): void {
 	// Presence marker — runs first so the website can detect us even
 	// before any auth sync has happened.
 	announcePresence();
+
+	// Pick up a guest (Google) ingest token if the user is signed in here.
+	void syncGuestToken();
 
 	// Initial announce — covers the case where the page loaded after the
 	// extension was already connected.

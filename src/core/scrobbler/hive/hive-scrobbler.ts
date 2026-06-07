@@ -31,6 +31,28 @@ async function injectRelay(tabId: number): Promise<void> {
 const CUSTOM_JSON_ID = 'hive_scrobble_ai';
 const APP_NAME = 'hivescrobblesai/1.0';
 
+/** Guest (Google) ingest credential, stored by the zingit-auth-sync
+ *  content script after the user logs in on scrobble.life. Lets a
+ *  no-Hive-account user scrobble to the server instead of the chain. */
+interface GuestAuth {
+	token:    string;
+	username: string | null;
+	origin:   string; // e.g. https://scrobble.life (where to POST)
+}
+
+async function readGuestAuth(): Promise<GuestAuth | null> {
+	try {
+		const data = await browser.storage.local.get('GuestAuth');
+		const g = (data?.GuestAuth ?? null) as GuestAuth | null;
+		if (g && typeof g.token === 'string' && g.token && typeof g.origin === 'string' && g.origin) {
+			return g;
+		}
+	} catch {
+		/* storage unavailable — treat as no guest auth */
+	}
+	return null;
+}
+
 /**
  * Module for broadcasting scrobbles to the Hive blockchain via custom_json.
  *
@@ -156,6 +178,14 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 				sessionID: data.sessionID,
 				sessionName: data.sessionName,
 			};
+		}
+		// No Hive session — but if a guest (Google) ingest token exists, bind
+		// anyway with an empty sessionID. Otherwise bindAllScrobblers() skips
+		// this scrobbler (no session → not bound → scrobble() never called),
+		// and broadcastScrobble's guest path would never be reached. The empty
+		// sessionID is what tells broadcastScrobble to take the guest branch.
+		if (await readGuestAuth()) {
+			return { sessionID: '', sessionName: '' };
 		}
 		throw new Error(ServiceCallResult.ERROR_AUTH);
 	}
@@ -419,20 +449,23 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 		nowPlaying: boolean,
 		percentPlayed?: number,
 	): Promise<ServiceCallResult> {
-		let username: string;
+		let username = '';
 		try {
-			const session = await this.getSession();
-			username = session.sessionID;
+			username = (await this.getSession()).sessionID;
 		} catch {
+			username = '';
+		}
+		// No Hive session → fall back to a guest (Google) ingest token if
+		// the user signed in on scrobble.life. No auth either way → bail.
+		const guest = username ? null : await readGuestAuth();
+		if (!username && !guest) {
 			return ServiceCallResult.ERROR_AUTH;
 		}
 
 		const clonedSong = song as ClonedSong;
 		const tabId = clonedSong?.controllerTabId;
-		if (!tabId || tabId < 0) {
-			this.debugLog('No valid tabId for Keychain broadcast', 'warn');
-			return ServiceCallResult.ERROR_OTHER;
-		}
+		// tabId is only needed for the Keychain relay (Hive path) — checked
+		// below, inside that branch. The guest path POSTs server-side.
 
 		// videoKind ('movie' | 'episode') wins when the connector reports it —
 		// long-form video has its own payload shape. Falls back to the music
@@ -524,6 +557,22 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 			payload.url = url;
 		}
 
+		// Guest (Google) path: POST to scrobble.life's ingest endpoint
+		// instead of an on-chain Keychain broadcast. Plaintext (no
+		// Keychain-derived privacy secret) and no relay/tab needed.
+		if (guest) {
+			if (nowPlaying) {
+				return ServiceCallResult.RESULT_OK;
+			}
+			return await this.ingestAsGuest(guest, payload);
+		}
+
+		// Hive path needs a valid tab for the Keychain relay.
+		if (!tabId || tabId < 0) {
+			this.debugLog('No valid tabId for Keychain broadcast', 'warn');
+			return ServiceCallResult.ERROR_OTHER;
+		}
+
 		const displayLeft = isLongForm
 			? payload.series_title || payload.title
 			: payload.artist;
@@ -580,6 +629,45 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 				'Failed to broadcast custom_json via Keychain',
 				'error',
 			);
+			return ServiceCallResult.ERROR_OTHER;
+		}
+	}
+
+	/**
+	 * POST a scrobble to scrobble.life's guest ingest endpoint using the
+	 * Bearer ingest token — the guest (Google) equivalent of a Keychain
+	 * broadcast. On a 401 we drop the token so the next scrobble.life
+	 * visit re-fetches a fresh one.
+	 */
+	private async ingestAsGuest(
+		guest: GuestAuth,
+		payload: HiveScrobblePayload & { now_playing?: boolean },
+	): Promise<ServiceCallResult> {
+		try {
+			const res = await fetch(`${guest.origin}/api/ingest/scrobble`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json',
+					Authorization: `Bearer ${guest.token}`,
+				},
+				body: JSON.stringify(payload),
+			});
+			if (res.status === 401) {
+				try {
+					await browser.storage.local.remove('GuestAuth');
+				} catch {
+					/* ignore */
+				}
+				this.debugLog('Guest ingest token rejected (401) — cleared', 'warn');
+				return ServiceCallResult.ERROR_AUTH;
+			}
+			if (!res.ok) {
+				this.debugLog(`Guest ingest failed: HTTP ${res.status}`, 'warn');
+				return ServiceCallResult.ERROR_OTHER;
+			}
+			return ServiceCallResult.RESULT_OK;
+		} catch (e) {
+			this.debugLog(`Guest ingest network error: ${String(e)}`, 'warn');
 			return ServiceCallResult.ERROR_OTHER;
 		}
 	}
