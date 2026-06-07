@@ -279,9 +279,9 @@ function ScrobblerDisplay(props: { label: ScrobblerLabel }) {
 				</p>
 				<Show when={!hiveSession()}>
 					<p>
-						Your scrobbles are saved to scrobble.life. Claim a free Hive
-						account once you&apos;ve scrobbled enough to own your history
-						on-chain.
+						Your scrobbles are saved to scrobble.life. Claim a free
+						Hive account once you&apos;ve scrobbled enough to own
+						your history on-chain.
 					</p>
 				</Show>
 				<Show when={guestAuth()?.username}>

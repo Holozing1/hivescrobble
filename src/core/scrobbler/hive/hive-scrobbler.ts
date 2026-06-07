@@ -35,16 +35,22 @@ const APP_NAME = 'hivescrobblesai/1.0';
  *  content script after the user logs in on scrobble.life. Lets a
  *  no-Hive-account user scrobble to the server instead of the chain. */
 interface GuestAuth {
-	token:    string;
+	token: string;
 	username: string | null;
-	origin:   string; // e.g. https://scrobble.life (where to POST)
+	origin: string; // e.g. https://scrobble.life (where to POST)
 }
 
 async function readGuestAuth(): Promise<GuestAuth | null> {
 	try {
 		const data = await browser.storage.local.get('GuestAuth');
 		const g = (data?.GuestAuth ?? null) as GuestAuth | null;
-		if (g && typeof g.token === 'string' && g.token && typeof g.origin === 'string' && g.origin) {
+		if (
+			g &&
+			typeof g.token === 'string' &&
+			g.token &&
+			typeof g.origin === 'string' &&
+			g.origin
+		) {
 			return g;
 		}
 	} catch {
@@ -658,11 +664,17 @@ export default class HiveScrobbler extends BaseScrobbler<'Hive'> {
 				} catch {
 					/* ignore */
 				}
-				this.debugLog('Guest ingest token rejected (401) — cleared', 'warn');
+				this.debugLog(
+					'Guest ingest token rejected (401) — cleared',
+					'warn',
+				);
 				return ServiceCallResult.ERROR_AUTH;
 			}
 			if (!res.ok) {
-				this.debugLog(`Guest ingest failed: HTTP ${res.status}`, 'warn');
+				this.debugLog(
+					`Guest ingest failed: HTTP ${res.status}`,
+					'warn',
+				);
 				return ServiceCallResult.ERROR_OTHER;
 			}
 			return ServiceCallResult.RESULT_OK;
