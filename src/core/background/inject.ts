@@ -1,4 +1,3 @@
-import { getConnectorByUrl } from '@/util/util-connector';
 import browser from 'webextension-polyfill';
 
 /**
@@ -73,15 +72,18 @@ async function injectConnector(tabId: number, url: string) {
 	// reload-time injection fans out into every open tab and the
 	// rejections from restricted ones surface as "Cannot access
 	// contents of the page" in the extension's error log.
-	if (isRestrictedUrl(url)) {
+	if (!/^https?:\/\//.test(url) || isRestrictedUrl(url)) {
 		return;
 	}
 
-	const connector = await getConnectorByUrl(url);
-
-	if (!connector) {
-		return;
-	}
+	// Mirror the manifest's declarative registration (<all_urls> +
+	// all_frames) instead of gating on getConnectorByUrl(tab.url): a
+	// tab's TOP url often matches no connector while an embedded player
+	// iframe does (scrobble.life wrapping a YouTube embed), and main.js
+	// also carries connector-independent pieces (Zingit auth sync, the
+	// Keychain broadcast handlers) that must come back after an update
+	// orphans the old scripts. main.js no-ops on frames with nothing to
+	// do, exactly as it does on normal navigation.
 
 	/**
 	 * Important note: We do not check if the script already exists here.
@@ -99,7 +101,7 @@ async function injectConnector(tabId: number, url: string) {
 	// matchers in the manifest.
 	browser.scripting
 		.executeScript({
-			target: { tabId },
+			target: { tabId, allFrames: true },
 			files: [script],
 		})
 		.catch((err) => {
