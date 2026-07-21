@@ -116,6 +116,18 @@ export default <ConnectorMeta[]>[
 		allFrames: true,
 	},
 	{
+		// 3Speak Audio — the SnapieAudioPlayer at audio.3speak.tv (the audio
+		// arm of 3Speak). Play page is /play?a=<permlink>, which is also the
+		// iframe src embedded in Hive posts — so `allFrames: true` (like the
+		// video embed) lets it run both standalone and inside those iframes.
+		// scrobble.life badges these '3SA' (vs '3S' video) off the origin URL.
+		label: '3Speak Audio',
+		matches: ['*://audio.3speak.tv/play*'],
+		js: '3speak-audio.js',
+		id: '3speak-audio',
+		allFrames: true,
+	},
+	{
 		label: 'MySpace',
 		matches: ['*://myspace.com/*'],
 		js: 'myspace.js',
