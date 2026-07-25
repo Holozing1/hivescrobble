@@ -82,10 +82,25 @@ const getTrackInfoFromYoutubeMusicCache: {
 	[videoId: string]: {
 		done?: boolean;
 		recognisedByYtMusic?: boolean;
+		/**
+		 * The lookup never produced an answer (network/permission failure).
+		 * Distinct from `recognisedByYtMusic: false`, which means YouTube
+		 * Music actively answered "this isn't music". Callers must treat a
+		 * failed lookup as "no signal", never as a negative result.
+		 */
+		lookupFailed?: boolean;
 		videoId?: string | null;
 		currentTrackInfo?: { artist?: string; track?: string };
 	};
 } = {};
+
+interface YtMusicPlayerResponse {
+	videoDetails?: {
+		musicVideoType?: string;
+		author?: string;
+		title?: string;
+	};
+}
 
 const trackInfoGetters: (() =>
 	| ArtistTrackInfo
@@ -538,19 +553,30 @@ Connector.scrobblingDisallowedReason = () => {
 			return 'IsLoading';
 		}
 
-		if (!ytMusicCache.recognisedByYtMusic) {
-			// Not recognised as music by YT Music. If this video also lives in
-			// a non-music category (Entertainment, Comedy, News, etc.) and
+		// A failed lookup is not a "no" — fall through and let the category
+		// and title heuristics decide. Blocking here would mute every
+		// scrobble whenever the lookup is unreachable, with a popup message
+		// blaming YouTube Music for something it was never asked.
+		if (!ytMusicCache.recognisedByYtMusic && !ytMusicCache.lookupFailed) {
+			const category = getVideoCategory();
+
+			// Category is still resolving. Report that rather than blocking
+			// on a signal we don't have yet — the fetch always settles, so
+			// this clears on a later state change.
+			if (category == null || category === categoryPending) {
+				return 'IsLoading';
+			}
+
+			// YouTube's own "Music" category is signal enough on its own.
+			// YT Music's catalogue misses indie, live and personal-channel
+			// uploads, and no setting rescued those, so never block them.
+			//
+			// Otherwise the video isn't music by either signal. If
 			// scrobbleNonMusicVideos is on, fall through — Connector.isVideo()
 			// returns true for non-music categories, so the hive scrobbler
 			// will tag it as kind=video and it'll land in the videos history
 			// instead of polluting the music feed.
-			const category = getVideoCategory();
-			const isNonMusicCategory =
-				category != null &&
-				category !== categoryPending &&
-				category !== categoryMusic;
-			if (!(scrobbleNonMusicVideos && isNonMusicCategory)) {
+			if (category !== categoryMusic && !scrobbleNonMusicVideos) {
 				return 'NotOnYouTubeMusic';
 			}
 		}
@@ -797,16 +823,32 @@ function getTrackInfoFromYoutubeMusic():
 		videoId,
 	});
 
-	fetch('https://music.youtube.com/youtubei/v1/player', {
-		method: 'POST',
-		headers: {
-			'Content-Type': 'application/json',
+	// This request MUST go through the service worker. Under Manifest V3 a
+	// cross-origin fetch made directly from a content script is subject to
+	// page CORS, and Firefox sends the extension's own origin
+	// (moz-extension://...) rather than the page's — which
+	// music.youtube.com rejects outright with a 403. That made every lookup
+	// fail on Firefox, and every YouTube scrobble get blocked as "not
+	// recognised as music". The service worker's request is covered by
+	// host_permissions instead, so it behaves identically on both browsers.
+	Util.fetchFromServiceWorker(
+		'https://music.youtube.com/youtubei/v1/player',
+		'json',
+		{
+			method: 'POST',
+			headers: {
+				'Content-Type': 'application/json',
+			},
+			body,
 		},
-		body,
-	})
-		.then((response) => response.json())
-		.then((videoInfo) => {
-			// TODO: type videoInfo
+	)
+		.then((response) => {
+			if (!response.ok) {
+				throw new Error('YouTube Music player request failed');
+			}
+
+			const videoInfo = response.content as YtMusicPlayerResponse;
+
 			getTrackInfoFromYoutubeMusicCache[videoId ?? ''] = {
 				done: true,
 
@@ -837,9 +879,14 @@ function getTrackInfoFromYoutubeMusic():
 				`Failed to fetch youtube music data for ${videoId}: ${err}`,
 				'warn',
 			);
+			// Fail OPEN. A lookup that never answered is not evidence that
+			// the video isn't music, so it must not be recorded as a "no" —
+			// callers key off `lookupFailed` and fall back to the category
+			// and title heuristics instead of blocking the scrobble.
 			getTrackInfoFromYoutubeMusicCache[videoId ?? ''] = {
 				done: true,
 				recognisedByYtMusic: false,
+				lookupFailed: true,
 			};
 		});
 }

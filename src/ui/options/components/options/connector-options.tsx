@@ -42,6 +42,15 @@ export default function ConnectorOptionsList() {
 					options={options}
 					setOptions={setOptions}
 					connectorOptions={connectorOptions}
+					i18ntitle="optionYtMusicRecognisedOnlyTitle"
+					i18nlabel="optionYtMusicRecognisedOnly"
+					connector="YouTube"
+					key="scrobbleMusicRecognisedOnly"
+				/>
+				<ConnectorOptionEntry
+					options={options}
+					setOptions={setOptions}
+					connectorOptions={connectorOptions}
 					i18ntitle="optionYtNonMusicVideosTitle"
 					i18nlabel="optionYtNonMusicVideos"
 					connector="YouTube"

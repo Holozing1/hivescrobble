@@ -180,7 +180,7 @@
         "description": "Option label"
     },
     "optionYtMusicRecognisedOnlyTitle": {
-        "message": "Ignore videos that are not recognised by YouTube Music as music",
+        "message": "Use YouTube Music's own recognition to decide what counts as music. Videos YouTube itself files under \"Music\" are always scrobbled, and if the check can't be reached the video is scrobbled anyway. Untick to skip the check entirely.",
         "description": "Option title"
     },
     "optionTheme": {
