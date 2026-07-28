@@ -887,6 +887,8 @@ export default class Controller {
 			trackArt,
 			duration,
 			scrobblingDisallowedReason,
+			isVideo,
+			isPodcast,
 		} = newState;
 		const isPlayingStateChanged =
 			this.currentSong.parsed.isPlaying !== isPlaying;
@@ -896,6 +898,33 @@ export default class Controller {
 		this.currentSong.parsed.trackArt = trackArt;
 		this.currentSong.parsed.scrobblingDisallowedReason =
 			scrobblingDisallowedReason;
+
+		/**
+		 * The music-vs-video disposition is EVIDENCE, and the evidence arrives
+		 * late. Connector.isVideo() on YouTube reads the player title and
+		 * channel out of the DOM and consults YouTube Music's recognition
+		 * lookup — none of which is necessarily available at the instant the
+		 * Song is constructed, which is when this used to be captured, once,
+		 * forever. A trailer whose title element hadn't painted yet was filed
+		 * as `song` and broadcast to an immutable chain that way, even though
+		 * the connector reported the correction milliseconds later and the
+		 * controller was handed it on every subsequent state change.
+		 *
+		 * Observed on prod: 17 YouTube items scrobbled as songs — A24 and
+		 * Marvel trailers, reaction videos, a cat vlog — every one of which
+		 * matches a pattern the connector already had. The rules were never
+		 * wrong; they were asked too early.
+		 *
+		 * Kept undefined-safe on purpose: a connector that reports nothing
+		 * (undefined) must not overwrite a decision already made, or every
+		 * non-YouTube connector would be reset to `song` on each tick.
+		 */
+		if (isVideo !== undefined && isVideo !== null) {
+			this.currentSong.parsed.isVideo = isVideo;
+		}
+		if (isPodcast !== undefined && isPodcast !== null) {
+			this.currentSong.parsed.isPodcast = isPodcast;
+		}
 
 		if (this.isNeedToUpdateDuration(newState) && duration) {
 			this.updateSongDuration(duration);
