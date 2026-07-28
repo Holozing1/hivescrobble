@@ -1,6 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import Song from '@/core/object/song';
 import type { State } from '@/core/types';
+import type { ConnectorMeta } from '@/core/connectors';
 
 vi.mock('webextension-polyfill', () => import('#/mocks/webextension-polyfill'));
 
@@ -39,7 +40,12 @@ const baseState = (over: Partial<State> = {}): State =>
 		...over,
 	}) as State;
 
-const meta = { id: 'youtube', label: 'YouTube', matches: [] };
+const meta: ConnectorMeta = {
+	id: 'youtube',
+	label: 'YouTube',
+	matches: ['*://*.youtube.com/*'],
+	js: 'youtube.js',
+};
 
 describe('late video-disposition corrections', () => {
 	it('starts with whatever the connector knew at construction', () => {
