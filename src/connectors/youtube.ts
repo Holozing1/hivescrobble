@@ -191,7 +191,13 @@ Connector.getTimeInfo = () => {
 	const videoElement = document.querySelector(
 		videoSelector,
 	) as HTMLVideoElement;
-	if (videoElement && !areChaptersAvailable()) {
+	// The <video> clock covers the WHOLE video, so it is meaningless when each
+	// chapter is its own track — but for navigation chapters it is exactly
+	// right. Withholding it whenever chapters merely existed left
+	// web-scrobbler with no duration and no position for the entire video,
+	// which is why chaptered videos scrobbled with percent_played = 0 and
+	// without a real playback threshold to gate on.
+	if (videoElement && !(areChaptersAvailable() && chaptersAreSeparateTracks())) {
 		let { currentTime, duration, playbackRate } = videoElement;
 
 		currentTime /= playbackRate;
@@ -521,7 +527,17 @@ Connector.getTrackArt = () => {
 };
 
 Connector.getUniqueID = () => {
-	if (areChaptersAvailable()) {
+	// Only let chapters dissolve the video's identity when they genuinely are
+	// separate tracks (album / live set / DJ mix). For navigation chapters the
+	// whole video is ONE item and the video id is its stable identity.
+	//
+	// Returning null whenever chapters merely EXIST made identity depend on
+	// areChaptersAvailable(), which is DOM-timing dependent — the chapter
+	// overlay text and the lazily-rendered macro-marker list it cross-checks
+	// both come and go during playback. Identity therefore oscillated between
+	// the video id and null, and every flip looked like a brand-new song, so
+	// one chaptered video scrobbled 3+ times in a single sitting.
+	if (areChaptersAvailable() && chaptersAreSeparateTracks()) {
 		return null;
 	}
 
@@ -969,6 +985,37 @@ function chaptersLookLikeTracks(): boolean {
 	return false;
 }
 
+// chaptersLookLikeTracks() walks the DOM and runs several regexes, and it is
+// consulted from getTimeInfo(), which fires on every `timeupdate`. Cache the
+// verdict per video to keep that cheap — and, more importantly, so the answer
+// cannot change mid-video as lazily-rendered DOM appears. An unstable verdict
+// is what let a single video's identity oscillate and scrobble repeatedly.
+let chaptersAsTracksCache: { videoId: string; verdict: boolean } | null = null;
+
+/**
+ * Cached `chaptersLookLikeTracks()`.
+ *
+ * Only caches once the category lookup has settled: while it is pending the
+ * verdict can still change, and freezing the pending answer would misfile an
+ * album as a navigation-chaptered video.
+ */
+function chaptersAreSeparateTracks(): boolean {
+	const videoId = getVideoId();
+	if (!videoId) {
+		return false;
+	}
+
+	if (chaptersAsTracksCache?.videoId === videoId) {
+		return chaptersAsTracksCache.verdict;
+	}
+
+	const verdict = chaptersLookLikeTracks();
+	if (getVideoCategory() !== categoryPending) {
+		chaptersAsTracksCache = { videoId, verdict };
+	}
+	return verdict;
+}
+
 function getTrackInfoFromChapters() {
 	// Short circuit if chapters not available — also dodges SponsorBlock
 	// hijacking the chapter element.
@@ -984,7 +1031,7 @@ function getTrackInfoFromChapters() {
 	// are navigation markers and we scrobble the whole video as one
 	// track via the title-based getter (no per-chapter notifications,
 	// no per-chapter Keychain prompts).
-	if (!chaptersLookLikeTracks()) {
+	if (!chaptersAreSeparateTracks()) {
 		return { artist: null, track: null };
 	}
 
